@@ -1,0 +1,10 @@
+{
+  "name": "star-wars-poslednii-kristall",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Star Wars: Poslednii Kristall - interactive quest site with shared admin storage via Netlify Blobs",
+  "dependencies": {
+    "@netlify/blobs": "*"
+  }
+}
