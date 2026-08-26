@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -493,7 +494,7 @@ const DEFAULT_MISSIONS = [
     subtitle:'Поиск в реальном мире',
     character:'r2d2',
     charText:'Имперский дроид разделил код на несколько карточек. Часть из них спрятана здесь, на этой базе.',
-    story:'Осмотри комнату — где-то поблизости спрятаны физические карточки с частями кода (родитель прячет их заранее). Собери все части и введи полный код.',
+    story:'Осмотри комнату — где-то поблизости спрятаны физические карточки с частями кода. Собери все части и введи полный код.',
     stages:[
       {type:'TEXT_INPUT', prompt:'Введи собранный код со всех найденных карточек.', taskLabel:'ВВЕДИ КОД', hints:['Ищи там, где обычно прячут маленькие вещи: под подушкой, в книге, за дверью.','Код по умолчанию, если родитель не менял его в /admin: R2D2-07.'], visual:'🤖', caption:'ПОСЛЕДНИЙ СИГНАЛ ДРОИДА'}
     ],
@@ -773,6 +774,8 @@ function getMissions(){
       });
     });
     return Object.assign({}, m, {
+      story: (o.story !== undefined && o.story !== '') ? o.story : m.story,
+      charText: (o.charText !== undefined && o.charText !== '') ? o.charText : m.charText,
       stages,
       ordering: o.ordering || (m.stages[0] && m.stages[0].type==='ORDERING' ? {options:m.stages[0].options, clues:m.stages[0].clues} : undefined)
     });
@@ -1639,6 +1642,8 @@ async function renderAdminPanel(savedPin){
     return `
     <div class="admin-mission-block" data-mid="${m.id}" data-kind="${isQR?'qr':(isOrdering?'ordering':'normal')}">
       <h3>MISSION ${String(m.id).padStart(2,'0')} — ${m.title}</h3>
+      <div class="admin-field"><label>СЮЖЕТНЫЙ ТЕКСТ МИССИИ (общее вступление, показывается над заданием)</label><textarea class="f-story">${m.story}</textarea></div>
+      <div class="admin-field"><label>РЕПЛИКА ПЕРСОНАЖА (голографическое сообщение)</label><textarea class="f-chartext">${m.charText||''}</textarea></div>
       ${stagesHtml}
       <div class="admin-field" style="margin-top:12px;"><label>ЗАГРУЗИТЬ ИЗОБРАЖЕНИЕ</label><input type="file" accept="image/*" class="f-image-file">${media.image?'<div class="visual-caption">Изображение загружено ✓</div>':''}</div>
       <div class="admin-field"><label>ССЫЛКА НА ВИДЕО (mp4 или YouTube/Vimeo) — необязательно</label><input class="f-video" value="${media.video && !media.video.startsWith('/.netlify')?media.video:''}"></div>
@@ -1683,6 +1688,10 @@ async function renderAdminPanel(savedPin){
       saveBtn.setAttribute('disabled','true');
       try{
         const missionOverride = {};
+        const storyInput = block.querySelector('.f-story');
+        if(storyInput) missionOverride.story = storyInput.value;
+        const charTextInput = block.querySelector('.f-chartext');
+        if(charTextInput) missionOverride.charText = charTextInput.value;
         const resultKeyInput = block.querySelector('.f-resultkey');
         if(resultKeyInput && resultKeyInput.value.trim()) missionOverride.resultKey = resultKeyInput.value.trim();
 
