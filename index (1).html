@@ -1,0 +1,1787 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>ЗВЁЗДНЫЕ ВОЙНЫ: ПОСЛЕДНИЙ КРИСТАЛЛ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/star-jedi" rel="stylesheet">
+<style>
+:root{
+  --font-title:'Star Jedi','Orbitron',sans-serif;
+  --void:#04050a;
+  --deep:#0a1330;
+  --panel:#0d1730;
+  --panel-edge:#1c2f56;
+  --cyan:#5fd8ff;
+  --cyan-dim:#2a6f8c;
+  --green:#39ff8c;
+  --red:#ff3b4e;
+  --violet:#a855f7;
+  --ink:#e7f1ff;
+  --ink-dim:#7d92b8;
+  --font-display:'Orbitron',sans-serif;
+  --font-body:'Rajdhani',sans-serif;
+  --font-mono:'Share Tech Mono',monospace;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;overflow-x:hidden;background:var(--void);}
+body{
+  font-family:var(--font-body);
+  color:var(--ink);
+  min-height:100vh;
+  position:relative;
+}
+#stars, #stars2, #stars3{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+}
+.nebula{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 15%, rgba(88,60,180,.18), transparent 60%),
+    radial-gradient(ellipse 50% 35% at 85% 75%, rgba(30,120,180,.16), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 60% 100%, rgba(30,60,140,.14), transparent 60%);
+}
+.scanlines{
+  position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.35;
+  background:repeating-linear-gradient(to bottom, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 2px, transparent 3px);
+  mix-blend-mode:overlay;
+}
+.vignette{
+  position:fixed; inset:0; z-index:3; pointer-events:none;
+  box-shadow:inset 0 0 18vw rgba(0,0,0,.75);
+}
+#app{position:relative; z-index:5; min-height:100vh; display:flex; flex-direction:column;}
+
+/* ---------- Typography ---------- */
+h1,h2,h3,.hud-label{font-family:var(--font-display); letter-spacing:.06em;}
+.mono{font-family:var(--font-mono);}
+p, .body-text{font-family:var(--font-body); font-weight:500; line-height:1.5;}
+
+/* ---------- Buttons ---------- */
+.btn{
+  font-family:var(--font-display);
+  font-size:.82rem;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--ink);
+  background:linear-gradient(180deg, rgba(95,216,255,.14), rgba(95,216,255,.04));
+  border:1px solid var(--cyan-dim);
+  padding:16px 28px;
+  cursor:pointer;
+  position:relative;
+  clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
+  transition:transform .15s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+  text-align:center;
+  min-height:52px;
+}
+.btn:hover{border-color:var(--cyan); box-shadow:0 0 22px rgba(95,216,255,.35); transform:translateY(-1px);}
+.btn:active{transform:translateY(1px) scale(.99);}
+.btn-primary{
+  background:linear-gradient(180deg, rgba(57,255,140,.20), rgba(57,255,140,.05));
+  border-color:#1c6b46; color:#d6ffe9;
+}
+.btn-primary:hover{border-color:var(--green); box-shadow:0 0 26px rgba(57,255,140,.4);}
+.btn-danger{background:linear-gradient(180deg, rgba(255,59,78,.18), rgba(255,59,78,.05)); border-color:#7a2530; color:#ffd9dd;}
+.btn-danger:hover{border-color:var(--red); box-shadow:0 0 22px rgba(255,59,78,.35);}
+.btn-ghost{background:transparent; border-color:#2a3d63; color:var(--ink-dim); padding:10px 18px; font-size:.72rem;}
+.btn-ghost:hover{color:var(--ink); border-color:var(--cyan-dim);}
+.btn[disabled]{opacity:.35; cursor:not-allowed; box-shadow:none; transform:none;}
+.btn-block{width:100%;}
+
+/* ---------- Panels ---------- */
+.panel{
+  background:linear-gradient(160deg, rgba(13,23,48,.86), rgba(6,10,24,.9));
+  border:1px solid var(--panel-edge);
+  position:relative;
+  clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);
+  padding:22px;
+  backdrop-filter:blur(6px);
+}
+.panel::before{
+  content:"";position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(115deg, transparent 40%, rgba(95,216,255,.05) 50%, transparent 60%);
+}
+.corner{position:absolute; width:16px; height:16px; border:2px solid var(--cyan); opacity:.7;}
+.corner.tl{top:-1px; left:-1px; border-right:none; border-bottom:none;}
+.corner.tr{top:-1px; right:-1px; border-left:none; border-bottom:none;}
+.corner.bl{bottom:-1px; left:-1px; border-right:none; border-top:none;}
+.corner.br{bottom:-1px; right:-1px; border-left:none; border-top:none;}
+
+.scan-sweep{position:absolute; left:0; right:0; height:2px; background:linear-gradient(90deg, transparent, var(--cyan), transparent); opacity:.7; animation:sweep 3.4s linear infinite;}
+@keyframes sweep{0%{top:0%} 100%{top:100%}}
+
+/* ---------- Layout shells ---------- */
+.screen{min-height:100vh; width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px 16px 100px;}
+.wrap{width:100%; max-width:640px;}
+
+/* ---------- Top HUD ---------- */
+.top-hud{
+  position:sticky; top:0; z-index:20;
+  padding:10px 14px;
+  background:linear-gradient(180deg, rgba(4,5,10,.92), rgba(4,5,10,.55));
+  border-bottom:1px solid #17233f;
+  backdrop-filter:blur(6px);
+}
+.top-hud-row{display:flex; align-items:center; justify-content:space-between; max-width:640px; margin:0 auto; gap:10px;}
+.hud-label{font-size:.68rem; color:var(--cyan); letter-spacing:.18em;}
+.progress-track{height:6px; background:#0e1830; border:1px solid #1c2f56; margin-top:6px; overflow:hidden; clip-path:polygon(4px 0,100% 0,100% 100%,0 100%,0 4px);}
+.progress-fill{height:100%; background:linear-gradient(90deg, var(--cyan-dim), var(--green)); box-shadow:0 0 10px rgba(57,255,140,.6); transition:width .6s ease;}
+.xp-pill{font-family:var(--font-mono); font-size:.72rem; color:var(--green); border:1px solid #1c6b46; padding:3px 10px; white-space:nowrap;}
+.sound-toggle{background:none; border:1px solid #1c2f56; color:var(--ink-dim); width:34px; height:34px; cursor:pointer; font-size:1rem; flex:none;}
+.sound-toggle.on{color:var(--cyan); border-color:var(--cyan-dim);}
+
+/* ---------- Intro ---------- */
+.intro-glyphs{font-family:var(--font-mono); color:var(--cyan-dim); font-size:.7rem; letter-spacing:.1em; opacity:.8; min-height:1.4em;}
+.title-block{text-align:center; margin-bottom:34px;}
+.eyebrow{font-size:.72rem; color:var(--cyan); letter-spacing:.35em; margin-bottom:14px;}
+.title-block h1{font-family:var(--font-title); font-size:2.6rem; margin:0; color:#fff; text-shadow:0 0 26px rgba(95,216,255,.55), 0 0 60px rgba(95,216,255,.25); letter-spacing:.12em; font-weight:400;}
+@media (max-width:420px){.title-block h1{font-size:2.1rem;}}
+.title-block h2{font-size:1.5rem; margin:6px 0 0; color:var(--green); text-shadow:0 0 18px rgba(57,255,140,.5); font-weight:700;}
+.title-block .sub{margin-top:18px; font-size:.85rem; color:var(--ink-dim); letter-spacing:.2em;}
+.clearance{margin-top:26px; font-family:var(--font-mono); font-size:.75rem; color:var(--violet); letter-spacing:.15em;}
+.holocron{
+  width:74px; height:74px; margin:0 auto 22px; position:relative;
+}
+.holocron .cube{
+  width:100%; height:100%;
+  border:1px solid var(--cyan);
+  transform:rotate(45deg);
+  animation:spin 6s linear infinite;
+  box-shadow:0 0 30px rgba(95,216,255,.5), inset 0 0 20px rgba(95,216,255,.25);
+}
+.holocron .cube::before{content:"";position:absolute; inset:14px; border:1px solid var(--green); animation:spin 4s linear infinite reverse;}
+@keyframes spin{from{transform:rotate(45deg)} to{transform:rotate(405deg)}}
+
+.boot-line{font-family:var(--font-mono); font-size:.78rem; color:var(--cyan); opacity:0; animation:fadeUp .5s ease forwards; margin:3px 0;}
+@keyframes fadeUp{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)}}
+
+.scan-overlay{
+  position:fixed; inset:0; z-index:60; background:#000; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+}
+.scan-overlay .bar{width:min(320px,70vw); height:2px; background:#0d1730; position:relative; overflow:hidden;}
+.scan-overlay .bar::after{content:""; position:absolute; left:-40%; top:0; bottom:0; width:40%; background:linear-gradient(90deg,transparent,var(--cyan),transparent); animation:scanx 1.1s ease-in-out infinite;}
+@keyframes scanx{0%{left:-40%} 100%{left:100%}}
+.glitch{animation:glitchAnim .18s steps(2) 3;}
+@keyframes glitchAnim{
+  0%{transform:translate(0,0)}
+  25%{transform:translate(-2px,1px)}
+  50%{transform:translate(2px,-1px)}
+  75%{transform:translate(-1px,2px)}
+  100%{transform:translate(0,0)}
+}
+
+/* ---------- Mission ---------- */
+.mission-eyebrow{font-size:.7rem; color:var(--cyan); letter-spacing:.25em; margin-bottom:6px;}
+.mission-title{font-size:1.5rem; color:#fff; margin:0 0 4px; letter-spacing:.04em;}
+.mission-sub{font-size:.9rem; color:var(--violet); margin:0 0 16px; letter-spacing:.06em; text-transform:uppercase;}
+.story-text{font-size:1.02rem; color:var(--ink); margin-bottom:18px; line-height:1.55;}
+.story-text strong{color:var(--cyan);}
+
+.visual-card{
+  border:1px dashed #294064; padding:22px; text-align:center; margin-bottom:18px;
+  background:radial-gradient(circle at 50% 30%, rgba(95,216,255,.08), transparent 70%);
+  font-size:2.6rem;
+}
+.visual-card img{max-width:100%; display:block; margin:0 auto; cursor:zoom-in; border:1px solid #1c2f56;}
+.visual-caption{font-family:var(--font-mono); font-size:.68rem; color:var(--ink-dim); margin-top:8px; letter-spacing:.08em;}
+
+.task-box{border-top:1px solid #1c2f56; border-bottom:1px solid #1c2f56; padding:16px 0; margin:16px 0;}
+.task-label{font-size:.72rem; color:var(--green); letter-spacing:.2em; margin-bottom:8px;}
+.task-prompt{font-size:1.05rem; margin-bottom:14px;}
+
+.answer-row{display:flex; gap:10px; margin-bottom:14px;}
+.answer-input{
+  flex:1; font-family:var(--font-mono); font-size:1.05rem; letter-spacing:.08em;
+  background:#060b1a; border:1px solid var(--cyan-dim); color:var(--ink); padding:14px 12px;
+  outline:none; min-width:0;
+}
+.answer-input:focus{border-color:var(--cyan); box-shadow:0 0 14px rgba(95,216,255,.3);}
+
+.feedback{font-family:var(--font-mono); font-size:.85rem; padding:12px 14px; margin-bottom:14px; border-left:3px solid; display:none;}
+.feedback.show{display:block; animation:fadeUp .3s ease;}
+.feedback.err{border-color:var(--red); background:rgba(255,59,78,.08); color:#ffb3ba;}
+.feedback.ok{border-color:var(--green); background:rgba(57,255,140,.08); color:#b9ffd6;}
+
+.mission-actions{display:flex; flex-wrap:wrap; gap:10px;}
+.mission-actions .btn{flex:1; min-width:140px;}
+
+.hints-area{margin-top:16px;}
+.hint-item{font-family:var(--font-mono); font-size:.82rem; color:var(--violet); padding:10px 12px; border-left:3px solid var(--violet); background:rgba(168,85,247,.07); margin-bottom:8px;}
+
+/* character message */
+.char-msg{display:flex; gap:12px; align-items:flex-start; margin-bottom:16px; padding:14px; border:1px solid #24365c; background:rgba(10,19,48,.5);}
+.char-avatar{width:44px; height:44px; flex:none; display:flex; align-items:center; justify-content:center; font-size:1.4rem; border:1px solid var(--cyan-dim); border-radius:50%; background:#081022;}
+.char-name{font-size:.72rem; letter-spacing:.15em; color:var(--cyan); margin-bottom:4px; font-family:var(--font-display);}
+.char-text{font-size:.92rem; color:var(--ink);}
+
+/* video */
+.video-block{margin-bottom:16px;}
+.video-block video, .video-block iframe{width:100%; aspect-ratio:16/9; border:1px solid var(--cyan-dim); background:#000;}
+
+/* image lightbox */
+.lightbox{position:fixed; inset:0; z-index:70; background:rgba(0,0,0,.92); display:none; align-items:center; justify-content:center; padding:20px;}
+.lightbox.show{display:flex;}
+.lightbox img{max-width:100%; max-height:90vh; border:1px solid var(--cyan);}
+.lightbox .close-x{position:absolute; top:18px; right:18px; background:none; border:1px solid var(--cyan-dim); color:var(--ink); width:38px; height:38px; cursor:pointer; font-size:1.1rem;}
+
+/* mission unlock transition */
+.unlock-flash{position:fixed; inset:0; z-index:65; background:var(--green); opacity:0; pointer-events:none;}
+.unlock-flash.play{animation:flash .5s ease;}
+@keyframes flash{0%{opacity:0}20%{opacity:.35}100%{opacity:0}}
+
+/* ---------- Map ---------- */
+.map-panel{margin-bottom:18px;}
+.planet-row{display:flex; flex-direction:column; gap:10px;}
+.planet{
+  display:flex; align-items:center; gap:14px; padding:12px; border:1px solid #1c2f56; cursor:pointer;
+  background:rgba(10,19,48,.4); transition:.2s;
+}
+.planet.active{border-color:var(--green); box-shadow:0 0 14px rgba(57,255,140,.25);}
+.planet.locked{opacity:.4; cursor:not-allowed;}
+.planet-dot{width:14px; height:14px; border-radius:50%; flex:none; background:#22355c; border:1px solid var(--cyan-dim);}
+.planet.active .planet-dot{background:var(--green); box-shadow:0 0 10px var(--green);}
+.planet-name{font-family:var(--font-display); font-size:.85rem; letter-spacing:.08em;}
+.planet-status{margin-left:auto; font-family:var(--font-mono); font-size:.68rem; color:var(--ink-dim);}
+
+.fragments-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:14px;}
+.fragment-cell{aspect-ratio:1; border:1px dashed #294064; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:.72rem; color:var(--ink-dim); text-align:center; padding:6px;}
+.fragment-cell.got{border-style:solid; border-color:var(--green); color:var(--green); background:rgba(57,255,140,.06);}
+
+/* qr scanner */
+.qr-video-wrap{position:relative; border:1px solid var(--cyan-dim); margin-bottom:14px; overflow:hidden; background:#000;}
+.qr-video-wrap video{width:100%; display:block;}
+.qr-frame{position:absolute; inset:14%; border:2px solid var(--green); box-shadow:0 0 0 2000px rgba(0,0,0,.35) inset;}
+
+/* progress dots bottom nav (map access) */
+.bottom-nav{position:fixed; left:0; right:0; bottom:0; z-index:20; display:flex; gap:8px; padding:10px 14px calc(10px + env(safe-area-inset-bottom)); background:linear-gradient(0deg, rgba(4,5,10,.95), rgba(4,5,10,.4)); border-top:1px solid #17233f;}
+.bottom-nav .btn{flex:1; padding:12px; font-size:.7rem;}
+
+/* final screen */
+.final-crystal{width:110px; height:110px; margin:0 auto 24px; position:relative;}
+.final-crystal .shard{
+  position:absolute; inset:0; margin:auto; width:70%; height:70%;
+  background:linear-gradient(160deg, var(--cyan), var(--violet));
+  clip-path:polygon(50% 0%,90% 35%,72% 100%,28% 100%,10% 35%);
+  animation:pulseCrystal 2.4s ease-in-out infinite;
+  box-shadow:0 0 50px rgba(95,216,255,.6);
+}
+@keyframes pulseCrystal{0%,100%{transform:scale(1); filter:brightness(1)} 50%{transform:scale(1.08); filter:brightness(1.3)}}
+.stat-row{display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:.85rem; padding:9px 0; border-bottom:1px solid #1c2f56;}
+.stat-row span:last-child{color:var(--green);}
+
+/* admin */
+.admin-field{margin-bottom:14px;}
+.admin-field label{display:block; font-size:.7rem; color:var(--cyan); letter-spacing:.1em; margin-bottom:6px; font-family:var(--font-mono);}
+.admin-field input, .admin-field textarea{width:100%; background:#060b1a; border:1px solid #1c2f56; color:var(--ink); padding:10px; font-family:var(--font-mono); font-size:.82rem;}
+.admin-field textarea{min-height:60px; resize:vertical;}
+.admin-mission-block{border:1px solid #1c2f56; padding:14px; margin-bottom:14px;}
+.admin-mission-block h3{font-size:.85rem; color:var(--green); margin:0 0 10px;}
+
+@media (min-width:720px){
+  .screen{padding-bottom:40px;}
+  .bottom-nav{max-width:640px; left:50%; transform:translateX(-50%); border:1px solid #17233f; border-bottom:none;}
+}
+.hidden{display:none !important;}
+
+/* ---------- New engine additions: stages, ordering, memory, archive, vault ---------- */
+.stage-progress{display:flex; gap:6px; margin-bottom:14px;}
+.stage-dot{flex:1; height:4px; background:#152241; border:1px solid #1c2f56;}
+.stage-dot.done{background:var(--green); border-color:#1c6b46;}
+.stage-dot.current{background:var(--cyan); border-color:var(--cyan-dim); box-shadow:0 0 8px rgba(95,216,255,.5);}
+
+.order-chips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+.order-chip{font-family:var(--font-display); font-size:.72rem; letter-spacing:.08em; padding:10px 14px; border:1px solid var(--cyan-dim); background:rgba(10,19,48,.5); cursor:pointer; user-select:none;}
+.order-chip.picked{opacity:.35; cursor:default; border-color:#2a3d63;}
+.order-picked-row{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; min-height:38px; padding:8px; border:1px dashed #294064;}
+.order-picked-item{font-family:var(--font-mono); font-size:.78rem; color:var(--green); padding:6px 10px; border:1px solid #1c6b46; background:rgba(57,255,140,.08);}
+.order-clues{font-size:.88rem; color:var(--ink-dim); margin-bottom:14px; line-height:1.6;}
+.order-clues div{margin-bottom:4px;}
+
+.memory-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin-bottom:14px;}
+.memory-tile{aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:1.3rem; border:1px solid var(--cyan-dim); background:rgba(10,19,48,.5); color:var(--ink-dim);}
+.memory-tile.glow{color:var(--green); border-color:var(--green); box-shadow:0 0 14px rgba(57,255,140,.4); text-shadow:0 0 8px rgba(57,255,140,.6);}
+.memory-timer{font-family:var(--font-mono); font-size:2rem; text-align:center; color:var(--red); margin-bottom:14px; text-shadow:0 0 14px rgba(255,59,78,.5);}
+
+.qr-symbols-row{display:flex; gap:10px; margin-bottom:14px;}
+.qr-symbol-slot{width:44px; height:44px; display:flex; align-items:center; justify-content:center; border:1px dashed #294064; font-family:var(--font-display); color:var(--ink-dim);}
+.qr-symbol-slot.got{border-style:solid; border-color:var(--green); color:var(--green); background:rgba(57,255,140,.08);}
+
+.vault-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+.vault-item{border:1px solid #1c2f56; padding:10px; background:rgba(10,19,48,.4);}
+.vault-item .vk-label{font-family:var(--font-mono); font-size:.62rem; color:var(--ink-dim); letter-spacing:.1em;}
+.vault-item .vk-value{font-family:var(--font-display); font-size:.85rem; color:var(--green); margin-top:3px; word-break:break-all;}
+.vault-item.locked .vk-value{color:#2a3d63;}
+
+.archive-list{display:flex; flex-direction:column; gap:8px;}
+.archive-item{display:flex; align-items:center; gap:12px; padding:12px; border:1px solid #1c2f56; background:rgba(10,19,48,.4);}
+.archive-item.locked{opacity:.4;}
+.archive-item .ai-title{font-family:var(--font-display); font-size:.8rem; flex:1;}
+.archive-item .ai-meta{font-family:var(--font-mono); font-size:.68rem; color:var(--ink-dim); text-align:right;}
+
+.xp-float{position:fixed; z-index:80; font-family:var(--font-display); color:var(--green); font-size:1.1rem; text-shadow:0 0 10px rgba(57,255,140,.6); pointer-events:none; animation:xpFloat 1.1s ease forwards;}
+@keyframes xpFloat{0%{opacity:0; transform:translateY(0)} 15%{opacity:1} 100%{opacity:0; transform:translateY(-40px)}}
+
+.secret-banner{border:1px solid var(--violet); background:rgba(168,85,247,.08); padding:14px; margin-top:16px; text-align:center; font-family:var(--font-display); font-size:.78rem; color:var(--violet); letter-spacing:.1em;}
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+<div class="nebula"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+<div class="unlock-flash" id="unlockFlash"></div>
+
+<div id="app"></div>
+
+<div class="lightbox" id="lightbox">
+  <button class="close-x" id="lightboxClose">✕</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<div class="scan-overlay hidden" id="scanOverlay">
+  <div class="holocron"><div class="cube"></div></div>
+  <div class="boot-line mono" style="animation-delay:.1s">ВХОДЯЩЕЕ ГОЛОГРАФИЧЕСКОЕ СООБЩЕНИЕ...</div>
+  <div class="scan-overlay-bar bar"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script>
+/* ============================================================
+   ЗВЁЗДНЫЕ ВОЙНЫ: ПОСЛЕДНИЙ КРИСТАЛЛ — quest engine
+   ============================================================ */
+
+/* ---------- Starfield background ---------- */
+(function(){
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let w,h,stars=[];
+  function resize(){
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    stars = [];
+    const count = Math.floor((w*h)/9000);
+    for(let i=0;i<count;i++){
+      stars.push({
+        x:Math.random()*w, y:Math.random()*h,
+        r:Math.random()*1.3+.2,
+        tw:Math.random()*Math.PI*2,
+        speed:Math.random()*0.15+0.02
+      });
+    }
+  }
+  function draw(t){
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle="#04050a";
+    ctx.fillRect(0,0,w,h);
+    for(const s of stars){
+      const alpha = 0.4 + Math.abs(Math.sin(s.tw + t*0.001*s.speed*20))*0.6;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = "#cfe8ff";
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(draw);
+})();
+
+/* ---------- Sound engine (synthesized, no external files) ---------- */
+const Sound = (function(){
+  let ctxA = null;
+  function ensure(){
+    if(!ctxA) ctxA = new (window.AudioContext||window.webkitAudioContext)();
+    if(ctxA.state === 'suspended') ctxA.resume();
+    return ctxA;
+  }
+  function beep(freq, dur, type, gainVal, delay){
+    if(!State.data.soundOn) return;
+    try{
+      const ac = ensure();
+      const t0 = ac.currentTime + (delay||0);
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(gainVal||0.12, t0+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0+dur);
+      osc.connect(gain).connect(ac.destination);
+      osc.start(t0); osc.stop(t0+dur+0.02);
+    }catch(e){}
+  }
+  return {
+    click:()=>beep(520,.06,'square',.08),
+    correct:()=>{beep(440,.1,'sine',.12,0); beep(660,.12,'sine',.12,.1); beep(880,.18,'sine',.14,.2);},
+    wrong:()=>{beep(180,.18,'sawtooth',.12,0); beep(120,.22,'sawtooth',.12,.08);},
+    unlock:()=>{beep(300,.1,'triangle',.1,0); beep(500,.1,'triangle',.1,.1); beep(760,.2,'triangle',.14,.2);},
+    xp:()=>beep(900,.08,'square',.08),
+    scan:()=>beep(700,.3,'sine',.06),
+    qr:()=>{beep(600,.08,'square',.1,0); beep(900,.08,'square',.1,.09);},
+    victory:()=>{[392,523,659,784,988].forEach((f,i)=>beep(f,.35,'sine',.13,i*.15));},
+    boot:()=>beep(200,.4,'sine',.08)
+  };
+})();
+/* ---------- Data: player, characters ---------- */
+const PLAYER_NAME = 'Антон';
+
+const CHARACTERS = {
+  r2d2:{name:'R2-D2', icon:'🔧'},
+  obiwan:{name:'ОБИ-ВАН КЕНОБИ', icon:'🧙'},
+  yoda:{name:'ЙОДА', icon:'🟢'},
+  vader:{name:'ДАРТ ВЕЙДЕР', icon:'⚫'},
+  archive:{name:'АРХИВ ДЖЕДАЕВ', icon:'📡'}
+};
+
+/* ---------- Mission data (PUBLIC — never contains correct answers) ----------
+   Correct answers live only server-side, in netlify/functions/quest-check.mjs,
+   and are checked there. This file only describes the *shape* of each stage:
+   the prompt shown to the player, its input type, its two hints, and any
+   flavour/visual fields. Admins can override prompts/hints/media (and, once
+   authenticated, the actual answers) from the /admin panel — see PANEL RODITELYA.
+*/
+const DEFAULT_MISSIONS = [
+  {
+    id:1,
+    title:'АРХИВ ОРДЕНА ДЖЕДАЕВ',
+    subtitle:'Хроники Ордена',
+    character:'archive',
+    charText:`${PLAYER_NAME}, доступ к Архиву открыт только джедаю. Ответь на два запроса подтверждения личности — Архив не подскажет дважды.`,
+    story:'Голографический хранитель Архива запрашивает твои полномочия. Здесь мало знать факты — нужно ещё и правильно ими воспользоваться.',
+    stages:[
+      {type:'TEXT_INPUT', prompt:'Как в Ордене джедаев стали называть Энакина Скайуокера после того, как он присягнул Императору и встал на путь ситха? Ответь одним словом на английском.', taskLabel:'ВВЕДИ ИМЯ', hints:['Это имя носит тот, кто ходит в чёрном шлеме и плаще и тяжело дышит.','Имя оканчивается на «-ER» и состоит из пяти букв: V _ _ _ R.'], visual:'🖤', caption:'ДОСЬЕ: ПАДШИЙ РЫЦАРЬ'},
+      {type:'TEXT_INPUT', prompt:'Посчитай количество букв в найденном имени (в английском написании) и прибавь число известных лун Татуина. Введи итоговое число.', taskLabel:'ВВЕДИ ЧИСЛО', hints:['В имени VADER пять букв.','У Татуина две луны — значит 5 + 2.'], visual:'🔢', caption:'ВЫЧИСЛЕНИЕ КЛЮЧА'}
+    ],
+    resultKeyLabel:'ЧИСЛОВОЙ КЛЮЧ АРХИВА'
+  },
+  {
+    id:2,
+    title:'ГОЛОКРОН',
+    subtitle:'Хранилище знаний',
+    character:'yoda',
+    charText:'Слушать разумом, а не угадывать — вот путь джедая. Голокрон откроется только логике.',
+    story:'В зале хранятся три голокрона — синий, зелёный и красный. Каждый принадлежал магистру своей эпохи. Определи логикой, какой из них древнее, а затем назови планету, где расположен сам Архив.',
+    stages:[
+      {type:'TEXT_INPUT', prompt:'Голокрон эпохи Расцвета Республики — синий. Голокрон Йоды — зелёный, и известно, что зелёный НЕ самый старый в зале. Эпоха Расцвета Республики предшествовала времени, когда Йода уже был известным магистром. Какой голокрон древнее — синий или зелёный?', taskLabel:'НАЗОВИ ЦВЕТ ДРЕВНЕЙШЕГО ГОЛОКРОНА', hints:['Расцвет Республики был задолго до событий с участием пожилого Йоды.','Значит голокрон этой более ранней эпохи и есть самый старый.'], visual:'🔷', caption:'ЗАЛ ГОЛОКРОНОВ'},
+      {type:'TEXT_INPUT', prompt:'Верно. Теперь назови планету-столицу Республики, на которой находится Храм джедаев и сам Архив. Ответь на английском.', taskLabel:'НАЗОВИ ПЛАНЕТУ', hints:['Это самая застроенная планета-город во всей галактике — один сплошной мегаполис.','Название начинается на «Cor» и заканчивается на «-ant».'], visual:'🌆', caption:'КООРДИНАТЫ АРХИВА'}
+    ],
+    resultKeyLabel:'НАЗВАНИЕ ПЛАНЕТЫ-КЛЮЧА'
+  },
+  {
+    id:3,
+    title:'СИГНАЛ R2-D2',
+    subtitle:'Дешифровка',
+    character:'r2d2',
+    charText:'Бип-буп-бип! У меня для тебя закодированное сообщение — но переводить его придётся тебе самому.',
+    story:'R2-D2 передаёт координаты двоичным кодом. Переведи каждые 8 цифр в десятичное число, а число — в букву по таблице ASCII, чтобы собрать слово.',
+    stages:[
+      {type:'BINARY', prompt:'Расшифруй сообщение дроида. Каждые 8 цифр — это один символ ASCII.', binaryData:'01010100 01000001 01010100 01001111 01001111 01001001 01001110 01000101', taskLabel:'ВВЕДИ РАСШИФРОВАННОЕ СЛОВО', hints:['01010100 в двоичной системе — это число 84, а 84-й символ таблицы ASCII — буква «T».','Переведи так все восемь блоков подряд — получится название планеты.'], visual:'📡', caption:'ВХОДЯЩИЙ СИГНАЛ'},
+      {type:'TEXT_INPUT', prompt:'Верно, это Татуин. Назови расу существ, к которой принадлежит Джабба Хатт — одно слово.', taskLabel:'НАЗОВИ РАСУ', hints:['Это медлительные, но очень влиятельные существа, похожие на больших слизней.','Название расы совпадает с частью настоящего имени самого Джаббы.'], visual:'🐛', caption:'ДОСЬЕ СУЩЕСТВА'},
+      {type:'TEXT_INPUT', prompt:'Соедини первую букву слова TATOOINE и первую букву слова HUTT. Введи получившиеся две буквы заглавными, без пробела.', taskLabel:'ВВЕДИ ДВЕ БУКВЫ', hints:['Первая буква TATOOINE — «T».','Первая буква HUTT — «H». Значит ответ «TH».'], visual:'🔤', caption:'СБОРКА КОДА'}
+    ],
+    resultKeyLabel:'НАЗВАНИЕ ПЛАНЕТЫ'
+  },
+  {
+    id:4,
+    title:'ИМПЕРСКИЙ ТАЙНИК',
+    subtitle:'Поиск в реальном мире',
+    character:'r2d2',
+    charText:'Имперский дроид разделил код на несколько карточек. Часть из них спрятана здесь, на этой базе.',
+    story:'Осмотри комнату — где-то поблизости спрятаны физические карточки с частями кода. Собери все части и введи полный код.',
+    stages:[
+      {type:'TEXT_INPUT', prompt:'Введи собранный код со всех найденных карточек.', taskLabel:'ВВЕДИ КОД', hints:['Ищи там, где обычно прячут маленькие вещи: под подушкой, в книге, за дверью.','Код по умолчанию, если родитель не менял его в /admin: R2D2-07.'], visual:'🤖', caption:'ПОСЛЕДНИЙ СИГНАЛ ДРОИДА'}
+    ],
+    resultKeyLabel:'КОД ТАЙНИКА'
+  },
+  {
+    id:5,
+    title:'ГАЛАКТИЧЕСКАЯ НАВИГАЦИЯ',
+    subtitle:'Построение маршрута',
+    character:'obiwan',
+    charText:'Навигационная система повреждена. Восстанови порядок систем по подсказкам штурмана, прежде чем отправляться в путь.',
+    story:'Впереди — городская часть миссии. Прежде чем выходить на маршрут, определи правильный порядок точек по логическим подсказкам ниже.',
+    stages:[
+      {type:'ORDERING', prompt:'Расставь точки маршрута в правильном порядке, используя подсказки штурмана.', options:['HOTH','TATOOINE','NABOO','CORUSCANT'],
+       clues:['«Дроид не появляется рядом с водой» — значит ледяная станция HOTH должна идти раньше водной NABOO.','TATOOINE, пустынная точка, находится сразу после HOTH.','CORUSCANT — самая высокая и застроенная точка — всегда идёт последней.'],
+       taskLabel:'НАЖИМАЙ ТОЧКИ В ПРАВИЛЬНОМ ПОРЯДКЕ', hints:['Начни с точки, где точно нет воды — это HOTH.','Правильный порядок: HOTH → TATOOINE → NABOO → CORUSCANT.'], visual:'🗺️', caption:'НАВИГАЦИОННАЯ СХЕМА'}
+    ],
+    resultKeyLabel:'КОД МАРШРУТА'
+  },
+  {
+    id:6,
+    title:'ОХОТА ЗА QR-ДРОИДАМИ',
+    subtitle:'Городская точка',
+    character:'obiwan',
+    charText:'В городе спрятаны шесть QR-дроидов. Три из них — настоящие маяки Сопротивления, три — имперские ловушки.',
+    story:'Найди и отсканируй QR-коды, спрятанные родителем в реальных местах. Настоящие маяки дают очки и открывают символы; ловушки Империи отнимают очки, но не останавливают миссию — их можно пропустить и продолжать поиск.',
+    stages:[
+      {type:'QR_SCAN', prompt:'Отсканируй QR-дроидов камерой или введи их ID вручную. Тебе нужно найти три настоящих маяка из шести.', taskLabel:'ID QR-ДРОИДА', hints:['QR-коды распечатаны и спрятаны родителем заранее в реальных местах.','Если камера недоступна — под кодом всегда подписан его ID, введи его вручную.'], visual:'📡', caption:'СКАНЕР АКТИВЕН', needed:3}
+    ],
+    resultKeyLabel:'СОБРАННЫЕ СИМВОЛЫ'
+  },
+  {
+    id:7,
+    title:'КОД СИТХА',
+    subtitle:'Опасный перехват',
+    character:'vader',
+    charText:'Юный джедай… твоё сопротивление бесполезно. Но раз уж ты здесь — попробуй разгадать шифр Империи.',
+    story:'Вейдер оставил зашифрованное сообщение методом сдвигового шифра Цезаря. Каждая буква сдвинута на 3 позиции вперёд по алфавиту.',
+    stages:[
+      {type:'CIPHER', prompt:'Расшифруй перехваченное сообщение методом Цезаря со сдвигом 3 (каждая буква сдвинута на 3 вперёд — чтобы прочитать, сдвигай каждую букву на 3 назад): «VKDGRZ»', taskLabel:'ВВЕДИ РАСШИФРОВАННОЕ СЛОВО', hints:['V назад на 3 буквы даёт S, K→H, D→A — уже видна половина слова.','Получится англоязычное слово из шести букв, означающее «тень».'], visual:'⚫', caption:'ПЕРЕХВАЧЕННЫЙ СИГНАЛ ИМПЕРИИ'},
+      {type:'TEXT_INPUT', prompt:'Введи расшифрованное слово ещё раз, чтобы протокол ситхов не заметил взлом.', taskLabel:'ПОДТВЕРДИ КОД', hints:['Это то же самое слово, что ты уже разгадал на прошлом этапе.','Слово состоит из шести букв.'], visual:'🔒', caption:'ПОДТВЕРЖДЕНИЕ ДОСТУПА'}
+    ],
+    resultKeyLabel:'РАСШИФРОВАННОЕ СЛОВО'
+  },
+  {
+    id:8,
+    title:'ИСПЫТАНИЕ СИЛЫ',
+    subtitle:'Проверка памяти',
+    character:'yoda',
+    charText:'Довериться своей памяти, ты должен. Смотреть внимательно — раз, запомнить — два, действовать — три.',
+    story:'На экране на 20 секунд появится панель со светящимися цифрами среди отвлекающих. Запомни их порядок — панель погаснет, и тебе нужно будет ввести их по памяти.',
+    stages:[
+      {type:'MEMORY_TEST', prompt:'Запомни светящиеся цифры и их порядок слева направо. Через 20 секунд панель погаснет.', taskLabel:'ВВЕДИ КОД ИЗ СВЕТЯЩИХСЯ ЦИФР', hints:['Светящихся цифр четыре, и вместе они образуют код.','Внимательно смотри именно на цифры с зелёным свечением, не на все подряд.'], visual:'🧠', caption:'ПАНЕЛЬ ПАМЯТИ', memoryTiles:['4','8','7','1','2','9'], glowIndexes:[0,2,4,5]}
+    ],
+    resultKeyLabel:'КОД ПАМЯТИ'
+  },
+  {
+    id:9,
+    title:'ПОСЛЕДНИЙ АРХИВ',
+    subtitle:'Финальная проверка знаний',
+    character:'archive',
+    charText:'Это последняя проверка перед доступом к координатам Кристалла. Отвечай точно — Архив не прощает ошибок.',
+    story:'Пять голокронов разных цветов принадлежали пяти магистрам разных эпох. Снова используй логику, чтобы определить самый древний из них, а затем назови кристалл, что даёт силу и голокронам, и световым мечам.',
+    stages:[
+      {type:'TEXT_INPUT', prompt:'Как и в Зале Голокронов, голокрон эпохи Расцвета Республики — синий, и он старше зелёного голокрона Йоды. Какой голокрон древнее?', taskLabel:'НАЗОВИ ЦВЕТ', hints:['Расцвет Республики предшествовал более поздней эпохе Йоды.','Ответ тот же, что и в Голокроне: «синий».'], visual:'🔷', caption:'ЗАЛ ГОЛОКРОНОВ. ЭТАП 2'},
+      {type:'TEXT_INPUT', prompt:'Как называется редкий кристалл, дающий энергию и голокронам, и клинкам световых мечей джедаев?', taskLabel:'НАЗОВИ КРИСТАЛЛ', hints:['Он же дал название всей финальной миссии квеста.','Кристалл называют «кибер» или «кайбер» (kyber).'], visual:'💠', caption:'ИСТОЧНИК СИЛЫ'}
+    ],
+    resultKeyLabel:'НАЗВАНИЕ КРИСТАЛЛА'
+  },
+  {
+    id:10,
+    title:'ПОСЛЕДНИЙ КРИСТАЛЛ',
+    subtitle:'Финал миссии',
+    character:'obiwan',
+    charText:`${PLAYER_NAME}, ты собрал девять ключей Архива. Настало время собрать их воедино — в этом и есть последнее испытание.`,
+    story:'Финальное задание не проверяет новые знания — оно проверяет, понял ли ты всю систему квеста. Открой VAULT (хранилище ключей) ниже — там собраны все девять ключей, которые ты нашёл в миссиях 1–9, по порядку.',
+    stages:[
+      {type:'FINAL_META', prompt:'Открой VAULT, возьми ПЕРВЫЙ символ каждого из девяти ключей по порядку миссий 1→9 и введи их подряд одной строкой, без пробелов.', taskLabel:'ВВЕДИ ФИНАЛЬНЫЙ КОД', hints:['Открой VAULT ниже — там показаны все девять ключей в порядке миссий.','Просто бери первый символ каждого ключа подряд: ключ миссии 1 → его первый символ, ключ миссии 2 → его первый символ, и так далее.'], visual:'💎', caption:'СБОРКА ФИНАЛЬНОГО КОДА'}
+    ],
+    resultKeyLabel:null
+  }
+];
+
+const SECRET_MISSION = {
+  id:11,
+  title:'SECRET PROTOCOL',
+  subtitle:'MISSION 11 — ДАРТ ВЕЙДЕР',
+  character:'vader',
+  charText:'Ты прошёл почти всю миссию без единой подсказки. Немногие джедаи заслуживают это последнее испытание.',
+  story:'Это необязательное задание. Оно не влияет на получение подарка — только на твою честь мастера-джедая.',
+  stages:[
+    {type:'TEXT_INPUT', prompt:'Вейдер верил, что тьма сильнее света. Но чему на самом деле учит философия джедаев — что должно существовать между Светом и Тьмой во Вселенной? Ответь одним словом.', taskLabel:'ВВЕДИ ОТВЕТ', hints:['Это ключевое понятие философии джедаев о Силе.','Ответ — «равновесие».'], visual:'⚖️', caption:'ФИНАЛЬНОЕ ИСПЫТАНИЕ'}
+  ],
+  resultKeyLabel:null
+};
+
+const DEFAULT_PLANETS = [
+  {id:'coruscant', name:'CORUSCANT', unlockAfter:2},
+  {id:'tatooine', name:'TATOOINE', unlockAfter:3},
+  {id:'hoth', name:'HOTH', unlockAfter:5},
+  {id:'naboo', name:'NABOO', unlockAfter:6}
+];
+
+const DEFAULT_CONFIG = {
+  finalLocationText: 'ПОСЛЕДНИЙ КРИСТАЛЛ ЖДЁТ ТЕБЯ НА УЛИЦЕ ИМПЕРСКОГО СТРАТЕГА, КОМПЛЕКС «ТУРБОЛАЗЕР-7».',
+  adminPin: '1234',
+  missionOverrides: {}, // { [id]: { stages:[{prompt,taskLabel,hints}], stageAnswers:[[...]], ordering:{options,clues}, qr:{correct,trap,symbols}, media:{image,video} } }
+  missionMedia: {},
+  planetOverrides: null
+};
+
+/* ---------- State (persisted per-device in localStorage) ---------- */
+const State = (function(){
+  const KEY = 'swq_state_v2';
+  const CFG_KEY = 'swq_config_v2';
+  let data = load();
+  let config = loadConfig();
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(raw) return Object.assign(defaultData(), JSON.parse(raw));
+    }catch(e){}
+    return defaultData();
+  }
+  function loadConfig(){
+    try{
+      const raw = localStorage.getItem(CFG_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        return Object.assign(JSON.parse(JSON.stringify(DEFAULT_CONFIG)), parsed);
+      }
+    }catch(e){}
+    return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+  }
+  function defaultData(){
+    return {
+      started:false,
+      prologShown:false,
+      currentView:'mission',
+      currentMission:1,
+      currentStage:0,
+      completed:[],
+      xp:0,
+      hintsUsedByStage:{},
+      totalHintsUsed:0,
+      missionKeys:{},
+      missionXP:{},
+      archiveTimestamps:{},
+      qrSymbols:[],
+      qrScanned:{},
+      fragments:[],
+      soundOn:true,
+      finished:false,
+      finalRevealed:false,
+      secretUnlocked:false,
+      secretCompleted:false
+    };
+  }
+  function save(){ localStorage.setItem(KEY, JSON.stringify(data)); }
+  function saveConfig(){ localStorage.setItem(CFG_KEY, JSON.stringify(config)); }
+  function reset(){ data = defaultData(); save(); }
+  function setConfig(newConfig){ config = newConfig; saveConfig(); }
+  return {
+    get data(){return data;},
+    get config(){return config;},
+    save, saveConfig, reset, setConfig
+  };
+})();
+
+/* ---------- Remote sync (Netlify Blobs via Netlify Functions) ----------
+   Public quest content (prompts, hints, media, final text) is fetched by
+   everyone. Correct answers are NEVER sent to unauthenticated clients —
+   quest-check.mjs validates them server-side, and quest-config.mjs only
+   includes the "stageAnswers" fields when the request carries a valid
+   admin PIN header (used by the /admin panel itself).
+*/
+const API_BASE = '/.netlify/functions';
+let remoteAvailable = false;
+
+async function fetchRemoteConfig(pinForAdmin){
+  try{
+    const controller = new AbortController();
+    const timeoutId = setTimeout(()=>controller.abort(), 6000);
+    let res;
+    try{
+      const headers = {};
+      if(pinForAdmin) headers['x-admin-pin'] = pinForAdmin;
+      res = await fetch(`${API_BASE}/quest-config`, {cache:'no-store', signal:controller.signal, headers});
+    }finally{
+      clearTimeout(timeoutId);
+    }
+    if(!res.ok) throw new Error('bad status '+res.status);
+    const data = await res.json();
+    if(data && typeof data === 'object'){
+      const merged = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CONFIG)), data);
+      if(!pinForAdmin){
+        State.setConfig(merged); // only cache the public (redacted) config locally
+      }
+      remoteAvailable = true;
+      return merged;
+    }
+  }catch(e){
+    remoteAvailable = false;
+  }
+  return State.config;
+}
+
+async function saveRemoteConfig(patch, adminPin){
+  try{
+    const res = await fetch(`${API_BASE}/quest-config`, {
+      method:'POST',
+      headers:{'content-type':'application/json', 'x-admin-pin': adminPin || ''},
+      body: JSON.stringify(patch)
+    });
+    if(res.status === 403) return {ok:false, reason:'pin'};
+    if(!res.ok) throw new Error('bad status '+res.status);
+    const merged = await res.json();
+    State.setConfig(Object.assign(JSON.parse(JSON.stringify(DEFAULT_CONFIG)), merged));
+    remoteAvailable = true;
+    return {ok:true, remote:true};
+  }catch(e){
+    return {ok:false, reason:'network'};
+  }
+}
+
+async function uploadAsset(key, file, adminPin){
+  const res = await fetch(`${API_BASE}/quest-asset?key=${encodeURIComponent(key)}`, {
+    method:'PUT',
+    headers:{'content-type': file.type || 'application/octet-stream', 'x-admin-pin': adminPin || ''},
+    body: file
+  });
+  if(res.status === 403){ const err = new Error('Неверный PIN-код'); err.code='pin'; throw err; }
+  if(!res.ok){ const body = await res.json().catch(()=>({})); throw new Error(body.error || ('Ошибка загрузки ('+res.status+')')); }
+  const json = await res.json();
+  return json.url;
+}
+
+/* Checks one stage answer (or a QR scan) against the server. Never sends
+   or receives the correct answer itself — only a correct/incorrect verdict
+   plus, on success, the XP awarded and (on a mission's last stage) the
+   connectivity key for that mission. */
+async function checkAnswer(missionId, stageIndex, answer, hintsUsed){
+  try{
+    const res = await fetch(`${API_BASE}/quest-check`, {
+      method:'POST',
+      headers:{'content-type':'application/json'},
+      body: JSON.stringify({missionId, stageIndex, answer, hintsUsed})
+    });
+    return await res.json();
+  }catch(e){
+    return {correct:false, offline:true, message:'Нет связи с сервером проверки ответов. Проверь подключение к интернету и попробуй снова.'};
+  }
+}
+async function checkQR(missionId, code){
+  try{
+    const res = await fetch(`${API_BASE}/quest-check`, {
+      method:'POST',
+      headers:{'content-type':'application/json'},
+      body: JSON.stringify({missionId, qr:true, code})
+    });
+    return await res.json();
+  }catch(e){
+    return {outcome:'error', offline:true, message:'Нет связи с сервером. Попробуй ещё раз.'};
+  }
+}
+
+/* ---------- Merge public overrides into mission/planet data ---------- */
+function getMissions(){
+  const overrides = State.config.missionOverrides || {};
+  return DEFAULT_MISSIONS.map(m=>{
+    const o = overrides[m.id] || {};
+    const stages = m.stages.map((s,i)=>{
+      const so = (o.stages && o.stages[i]) || {};
+      return Object.assign({}, s, so, {
+        hints: (so.hints && so.hints.length===2) ? so.hints : s.hints
+      });
+    });
+    return Object.assign({}, m, {
+      story: (o.story !== undefined && o.story !== '') ? o.story : m.story,
+      charText: (o.charText !== undefined && o.charText !== '') ? o.charText : m.charText,
+      stages,
+      ordering: o.ordering || (m.stages[0] && m.stages[0].type==='ORDERING' ? {options:m.stages[0].options, clues:m.stages[0].clues} : undefined)
+    });
+  });
+}
+function getSecretMission(){
+  const overrides = State.config.missionOverrides || {};
+  const o = overrides[11] || {};
+  const stages = SECRET_MISSION.stages.map((s,i)=>{
+    const so = (o.stages && o.stages[i]) || {};
+    return Object.assign({}, s, so, { hints:(so.hints && so.hints.length===2) ? so.hints : s.hints });
+  });
+  return Object.assign({}, SECRET_MISSION, {stages});
+}
+function getPlanets(){ return State.config.planetOverrides || DEFAULT_PLANETS; }
+function getMediaFor(missionId){ return (State.config.missionMedia||{})[missionId] || {}; }
+
+function normalizeAnswer(str){
+  return String(str||'').trim().toLowerCase().replace(/\s+/g,'').replace(/-/g,'').replace(/ё/g,'е');
+}
+
+/* ---------- App shell ---------- */
+const app = document.getElementById('app');
+
+function render(){
+  const d = State.data;
+  if(location.hash === '#admin'){ renderAdmin(); return; }
+  if(!d.started){ renderIntro(); return; }
+  if(!d.prologShown){ renderProlog(); return; }
+  if(d.finished){ renderFinal(); return; }
+  if(d.currentView === 'secret'){ renderSecretMission(); return; }
+  renderTopHud();
+  renderMainView();
+  renderBottomNav();
+}
+window.addEventListener('hashchange', render);
+
+function renderIntro(){
+  const hasProgress = State.data.currentMission > 1 || State.data.completed.length>0 || State.data.prologShown;
+  app.innerHTML = `
+    <div class="screen">
+      <div class="wrap" style="text-align:center;">
+        <div class="holocron"><div class="cube"></div></div>
+        <div class="eyebrow">УРОВЕНЬ ДОСТУПА: JEDI · ТЕРМИНАЛ АКТИВЕН</div>
+        <div class="title-block">
+          <h1>STAR WARS</h1>
+          <h2>ПОСЛЕДНИЙ КРИСТАЛЛ</h2>
+          <div class="sub">СЕКРЕТНАЯ МИССИЯ ДЛЯ ДЖЕДАЯ ${PLAYER_NAME.toUpperCase()}</div>
+        </div>
+        <div class="intro-glyphs mono" id="introGlyphs">инициализация бортового компьютера...</div>
+        <div style="margin-top:28px; display:flex; flex-direction:column; gap:12px;">
+          <button class="btn btn-primary btn-block" id="startBtn">НАЧАТЬ МИССИЮ</button>
+          ${hasProgress ? '<button class="btn btn-block" id="continueBtn">ПРОДОЛЖИТЬ МИССИЮ</button>' : ''}
+        </div>
+        <div class="clearance mono">УРОВЕНЬ ДОСТУПА: JEDI</div>
+      </div>
+    </div>
+  `;
+  const glyphs = document.getElementById('introGlyphs');
+  const lines = ['синхронизация с Сопротивлением...','сканирование помех Империи...','канал связи защищён.'];
+  let i=0;
+  const iv = setInterval(()=>{ if(i<lines.length){ glyphs.textContent = lines[i]; i++; } else clearInterval(iv); },700);
+
+  document.getElementById('startBtn').addEventListener('click', ()=>{
+    Sound.click();
+    playBootSequence(()=>{ State.data.started = true; State.save(); render(); });
+  });
+  const cbtn = document.getElementById('continueBtn');
+  if(cbtn) cbtn.addEventListener('click', ()=>{ Sound.click(); State.data.started = true; State.save(); render(); });
+}
+
+function playBootSequence(done){
+  Sound.boot();
+  const overlay = document.getElementById('scanOverlay');
+  overlay.classList.remove('hidden'); overlay.classList.add('glitch');
+  setTimeout(()=>{ overlay.classList.add('hidden'); overlay.classList.remove('glitch'); done(); }, 1400);
+}
+
+function renderProlog(){
+  app.innerHTML = `
+    <div class="screen" style="background:#000;">
+      <div class="wrap" style="text-align:center;">
+        <div class="boot-line" style="animation-delay:.1s; font-size:1.05rem; color:#fff;">${PLAYER_NAME}.</div>
+        <div class="boot-line" style="animation-delay:1s; font-size:.95rem; color:var(--cyan);">Если ты видишь это сообщение, значит древний Кристалл Кайбер снова активировался.</div>
+        <div class="boot-line" style="animation-delay:2.2s; font-size:.95rem; color:var(--cyan);">Его местонахождение было разделено на десять частей. Каждая часть защищена испытанием.</div>
+        <div class="boot-line" style="animation-delay:3.6s; font-size:.95rem; color:var(--green);">Некоторые ответы находятся перед твоими глазами. Другие — там, куда тебе ещё предстоит отправиться.</div>
+        <div class="boot-line" style="animation-delay:5s; font-size:.95rem; color:var(--red);">И запомни: НЕ ДОВЕРЯЙ ПЕРВОМУ ОТВЕТУ.</div>
+        <div class="boot-line" style="animation-delay:6s; font-size:.95rem; color:var(--red);">Иногда правильный путь начинается с неправильного.</div>
+        <div style="margin-top:36px;">
+          <button class="btn btn-primary" id="prologBtn" style="opacity:0; animation:fadeUp .5s ease forwards; animation-delay:6.8s;">МИССИЯ НАЧИНАЕТСЯ</button>
+        </div>
+      </div>
+    </div>
+  `;
+  setTimeout(()=>{
+    const btn = document.getElementById('prologBtn');
+    if(btn) btn.addEventListener('click', ()=>{
+      Sound.unlock();
+      State.data.prologShown = true;
+      State.save();
+      render();
+    });
+  }, 6900);
+}
+
+/* ---------- Top HUD ---------- */
+function renderTopHud(){
+  const missions = getMissions();
+  const d = State.data;
+  const idx = Math.min(d.currentMission, missions.length);
+  const pct = Math.round((d.completed.length/missions.length)*100);
+  let hud = document.getElementById('topHud');
+  const html = `
+    <div class="top-hud-row">
+      <div style="flex:1;">
+        <div class="hud-label">MISSION ${String(idx).padStart(2,'0')} / ${missions.length} · JEDI LEVEL</div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="xp-pill">JEDI XP: ${d.xp}</div>
+      <button class="sound-toggle ${d.soundOn?'on':''}" id="soundBtn" title="Звук">${d.soundOn?'🔊':'🔇'}</button>
+    </div>
+  `;
+  if(!hud){ hud = document.createElement('div'); hud.id='topHud'; hud.className='top-hud'; app.appendChild(hud); }
+  hud.innerHTML = html;
+  document.getElementById('soundBtn').addEventListener('click', ()=>{
+    State.data.soundOn = !State.data.soundOn; State.save(); renderTopHud();
+    if(State.data.soundOn) Sound.click();
+  });
+}
+
+function renderBottomNav(){
+  let nav = document.getElementById('bottomNav');
+  if(!nav){ nav = document.createElement('div'); nav.id='bottomNav'; nav.className='bottom-nav'; app.appendChild(nav); }
+  const view = State.data.currentView;
+  nav.innerHTML = `
+    <button class="btn" id="navMission">МИССИЯ</button>
+    <button class="btn" id="navMap">КАРТА</button>
+    <button class="btn" id="navArchive">АРХИВ</button>
+  `;
+  document.getElementById('navMission').addEventListener('click', ()=>{ Sound.click(); State.data.currentView='mission'; State.save(); renderMainView(); });
+  document.getElementById('navMap').addEventListener('click', ()=>{ Sound.click(); State.data.currentView='map'; State.save(); renderMainView(); });
+  document.getElementById('navArchive').addEventListener('click', ()=>{ Sound.click(); State.data.currentView='archive'; State.save(); renderMainView(); });
+}
+
+function renderMainView(){
+  let container = document.getElementById('mainContainer');
+  if(!container){ container = document.createElement('div'); container.id='mainContainer'; app.appendChild(container); }
+  const view = State.data.currentView;
+  if(view==='map') renderMap(container);
+  else if(view==='archive') renderArchive(container);
+  else renderMission(container);
+}
+
+/* ---------- Mission / stage rendering ---------- */
+function stageKey(missionId, stageIndex){ return missionId+'-'+stageIndex; }
+
+function renderMission(container){
+  const missions = getMissions();
+  const d = State.data;
+  const mission = missions.find(m=>m.id===d.currentMission);
+  if(!mission){ renderMap(container); return; }
+  const stage = mission.stages[d.currentStage];
+  const media = getMediaFor(mission.id);
+  const hUsed = d.hintsUsedByStage[stageKey(mission.id, d.currentStage)] || 0;
+
+  container.innerHTML = `
+    <div class="screen" style="padding-top:24px;">
+      <div class="wrap">
+        <div class="panel" style="overflow:hidden;">
+          <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+          <div class="scan-sweep"></div>
+
+          <div class="mission-eyebrow">MISSION ${String(mission.id).padStart(2,'0')}</div>
+          <h2 class="mission-title">${mission.title}</h2>
+          <div class="mission-sub">${mission.subtitle}</div>
+
+          <div class="stage-progress">
+            ${mission.stages.map((s,i)=>`<div class="stage-dot ${i<d.currentStage?'done':(i===d.currentStage?'current':'')}"></div>`).join('')}
+          </div>
+
+          ${mission.character ? charMsgHtml(mission.character, mission.charText) : ''}
+
+          ${media.video ? `
+            <div class="video-block">
+              <div class="hud-label" style="margin-bottom:8px;">ВХОДЯЩЕЕ ГОЛОГРАФИЧЕСКОЕ СООБЩЕНИЕ</div>
+              ${media.video.includes('youtube')||media.video.includes('vimeo')
+                  ? `<iframe src="${media.video}" allowfullscreen frameborder="0"></iframe>`
+                  : `<video controls src="${media.video}"></video>`}
+            </div>
+          ` : ''}
+
+          <p class="story-text">${mission.story}</p>
+
+          ${media.image ? `
+            <div class="visual-card" style="padding:8px;">
+              <img src="${media.image}" alt="${mission.title}" onclick="openLightbox('${media.image}')">
+            </div>
+          ` : `<div class="visual-card">${stage.visual||'✦'}<div class="visual-caption">${stage.caption||''}</div></div>`}
+
+          <div id="stageBody"></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  renderStageBody(mission, stage, hUsed);
+}
+
+function charMsgHtml(key, text){
+  const c = CHARACTERS[key];
+  if(!c) return '';
+  return `<div class="char-msg"><div class="char-avatar">${c.icon}</div><div><div class="char-name">${c.name}</div><div class="char-text">«${text}»</div></div></div>`;
+}
+
+function renderHintsBlock(hints, count){
+  let html='';
+  for(let i=0;i<count;i++) html += `<div class="hint-item">ПОДСКАЗКА ${i+1}: ${hints[i]}</div>`;
+  return html;
+}
+
+function renderStageBody(mission, stage, hUsed){
+  const bodyEl = document.getElementById('stageBody');
+  const commonFooter = (typeSpecificAnswerRowHtml)=>`
+    <div class="task-box">
+      <div class="task-label">${stage.taskLabel}</div>
+      <p class="task-prompt">${stage.prompt}</p>
+      ${typeSpecificAnswerRowHtml}
+      <div class="feedback" id="feedback"></div>
+      <div class="mission-actions">
+        <button class="btn btn-primary" id="checkBtn">ПРОВЕРИТЬ</button>
+        <button class="btn" id="hintBtn">ПОДСКАЗКА (${hUsed}/2)</button>
+        <button class="btn btn-ghost" id="retryBtn">ПОВТОРИТЬ ЗАДАНИЕ</button>
+      </div>
+      <div class="hints-area" id="hintsArea">${renderHintsBlock(stage.hints, hUsed)}</div>
+    </div>
+  `;
+
+  if(stage.type === 'BINARY'){
+    bodyEl.innerHTML = commonFooter(`
+      <div class="visual-card mono" style="font-size:1rem; letter-spacing:.15em; line-height:1.8; text-align:left; white-space:pre-wrap;">${stage.binaryData}</div>
+      <div class="answer-row"><input class="answer-input" id="answerInput" type="text" autocomplete="off" placeholder="_______"></div>
+    `);
+  } else if(stage.type === 'CIPHER'){
+    bodyEl.innerHTML = commonFooter(`<div class="answer-row"><input class="answer-input" id="answerInput" type="text" autocomplete="off" placeholder="_______"></div>`);
+  } else if(stage.type === 'ORDERING'){
+    const options = (mission.ordering && mission.ordering.options) || stage.options;
+    const clues = (mission.ordering && mission.ordering.clues) || stage.clues;
+    bodyEl.innerHTML = commonFooter(`
+      <div class="order-clues">${(clues||[]).map(c=>`<div>• ${c}</div>`).join('')}</div>
+      <div class="order-picked-row" id="orderPicked"></div>
+      <div class="order-chips" id="orderChips">${options.map(o=>`<div class="order-chip" data-val="${o}">${o}</div>`).join('')}</div>
+      <div class="answer-row hidden"><input class="answer-input" id="answerInput" type="hidden" value=""></div>
+    `);
+    const picked = [];
+    const chipsEl = document.getElementById('orderChips');
+    const pickedEl = document.getElementById('orderPicked');
+    chipsEl.querySelectorAll('.order-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        if(chip.classList.contains('picked')) return;
+        Sound.click();
+        chip.classList.add('picked');
+        picked.push(chip.getAttribute('data-val'));
+        pickedEl.innerHTML = picked.map(p=>`<div class="order-picked-item">${p}</div>`).join('');
+        document.getElementById('answerInput').value = picked.join(',');
+      });
+    });
+  } else if(stage.type === 'MEMORY_TEST'){
+    bodyEl.innerHTML = commonFooter(`
+      <div class="memory-timer" id="memTimer">20</div>
+      <div class="memory-grid" id="memGrid">${stage.memoryTiles.map((t,i)=>`<div class="memory-tile ${stage.glowIndexes.includes(i)?'glow':''}" data-i="${i}">${t}</div>`).join('')}</div>
+      <div class="answer-row hidden" id="memAnswerRow"><input class="answer-input" id="answerInput" type="text" autocomplete="off" placeholder="____"></div>
+    `);
+    let seconds = 20;
+    const timerEl = document.getElementById('memTimer');
+    const gridEl = document.getElementById('memGrid');
+    const checkBtn = document.getElementById('checkBtn');
+    checkBtn.setAttribute('disabled','true');
+    const iv = setInterval(()=>{
+      seconds--;
+      timerEl.textContent = String(seconds);
+      if(seconds<=0){
+        clearInterval(iv);
+        gridEl.querySelectorAll('.memory-tile').forEach(t=>{ t.textContent='?'; t.classList.remove('glow'); });
+        timerEl.textContent = 'ВВЕДИ КОД ПО ПАМЯТИ';
+        document.getElementById('memAnswerRow').classList.remove('hidden');
+        checkBtn.removeAttribute('disabled');
+        document.getElementById('answerInput').focus();
+      }
+    },1000);
+  } else if(stage.type === 'QR_SCAN'){
+    renderQRStage(bodyEl, mission, stage, commonFooter);
+    return; // QR wires its own submit/hint handlers
+  } else if(stage.type === 'FINAL_META'){
+    bodyEl.innerHTML = commonFooter(`
+      <button class="btn" id="openVaultBtn" style="margin-bottom:14px;">🔐 ОТКРЫТЬ VAULT</button>
+      <div id="vaultInline"></div>
+      <div class="answer-row"><input class="answer-input" id="answerInput" type="text" autocomplete="off" placeholder="_______"></div>
+    `);
+    document.getElementById('openVaultBtn').addEventListener('click', ()=>{
+      Sound.click();
+      document.getElementById('vaultInline').innerHTML = renderVaultHtml();
+    });
+  } else {
+    // TEXT_INPUT / NUMBER_INPUT / default
+    bodyEl.innerHTML = commonFooter(`<div class="answer-row"><input class="answer-input" id="answerInput" type="text" autocomplete="off" placeholder="_______"></div>`);
+  }
+
+  wireStandardStageControls(mission, stage, hUsed);
+}
+
+function wireStandardStageControls(mission, stage, hUsed){
+  const stageIdx = mission.stages.indexOf(stage);
+  document.getElementById('checkBtn').addEventListener('click', ()=>submitStageAnswer(mission, stage, stageIdx));
+  const input = document.getElementById('answerInput');
+  if(input) input.addEventListener('keydown', e=>{ if(e.key==='Enter') submitStageAnswer(mission, stage, stageIdx); });
+  document.getElementById('hintBtn').addEventListener('click', ()=>useHint(mission, stageIdx));
+  document.getElementById('retryBtn').addEventListener('click', ()=>{
+    Sound.click();
+    renderStageBody(mission, stage, State.data.hintsUsedByStage[stageKey(mission.id, stageIdx)]||0);
+  });
+}
+
+function useHint(mission, stageIdx){
+  const d = State.data;
+  const key = stageKey(mission.id, stageIdx);
+  const used = d.hintsUsedByStage[key] || 0;
+  if(used>=2){ Sound.click(); return; }
+  d.hintsUsedByStage[key] = used+1;
+  d.totalHintsUsed += 1;
+  State.save();
+  Sound.click();
+  const stage = mission.stages[stageIdx];
+  document.getElementById('hintsArea').innerHTML = renderHintsBlock(stage.hints, used+1);
+  document.getElementById('hintBtn').textContent = `ПОДСКАЗКА (${used+1}/2)`;
+  if(used+1>=2) document.getElementById('hintBtn').setAttribute('disabled','true');
+}
+
+async function submitStageAnswer(mission, stage, stageIdx){
+  const input = document.getElementById('answerInput');
+  const fb = document.getElementById('feedback');
+  const val = input ? input.value : '';
+  if(!val || !val.trim()) return;
+  const checkBtn = document.getElementById('checkBtn');
+  checkBtn.setAttribute('disabled','true');
+  const hUsed = State.data.hintsUsedByStage[stageKey(mission.id, stageIdx)] || 0;
+  const result = await checkAnswer(mission.id, stageIdx, val, hUsed);
+  checkBtn.removeAttribute('disabled');
+
+  if(result.correct){
+    Sound.correct();
+    fb.textContent = 'ДОСТУП РАЗРЕШЁН.';
+    fb.className = 'feedback show ok';
+    showXpFloat(result.xpAwarded||0);
+    if(result.isLastStage){
+      completeMission(mission, result.resultKey, result.xpAwarded||0);
+    }else{
+      advanceStage(mission, result.xpAwarded||0);
+    }
+  }else{
+    Sound.wrong();
+    fb.innerHTML = result.message || 'ОШИБКА ДОСТУПА.<br>R2-D2 сообщает: «Бип-бип...»<br>Попробуй ещё раз.';
+    fb.className = 'feedback show err';
+    if(input){ input.classList.add('glitch'); setTimeout(()=>input.classList.remove('glitch'),200); }
+  }
+}
+
+function showXpFloat(xp){
+  if(!xp) return;
+  const el = document.createElement('div');
+  el.className = 'xp-float';
+  el.textContent = '+'+xp+' XP';
+  el.style.left = '50%'; el.style.top = '40%'; el.style.transform='translateX(-50%)';
+  document.body.appendChild(el);
+  Sound.xp();
+  setTimeout(()=>el.remove(), 1200);
+}
+
+function advanceStage(mission, xp){
+  const d = State.data;
+  d.xp += xp;
+  d.missionXP[mission.id] = (d.missionXP[mission.id]||0) + xp;
+  d.currentStage += 1;
+  State.save();
+  flashUnlock();
+  setTimeout(()=>render(), 900);
+}
+
+function completeMission(mission, resultKey, xp){
+  const d = State.data;
+  d.xp += xp;
+  d.missionXP[mission.id] = (d.missionXP[mission.id]||0) + xp;
+  if(resultKey) d.missionKeys[mission.id] = resultKey;
+  if(!d.completed.includes(mission.id)){
+    d.completed.push(mission.id);
+    d.archiveTimestamps[mission.id] = Date.now();
+  }
+  const fragIndex = Math.ceil(mission.id/2.5);
+  if(!d.fragments.includes(fragIndex) && d.fragments.length<4) d.fragments.push(fragIndex);
+
+  d.currentStage = 0;
+  const missions = getMissions();
+  const nextId = mission.id+1;
+  if(nextId <= missions.length){
+    d.currentMission = nextId;
+  }else{
+    d.finished = true;
+    if(d.totalHintsUsed <= 2) d.secretUnlocked = true;
+  }
+  State.save();
+  flashUnlock();
+  setTimeout(()=>render(), 1000);
+}
+
+function flashUnlock(){
+  Sound.unlock();
+  const el = document.getElementById('unlockFlash');
+  el.classList.add('play');
+  setTimeout(()=>el.classList.remove('play'), 550);
+}
+
+/* ---------- QR stage ---------- */
+function renderQRStage(bodyEl, mission, stage, commonFooter){
+  const d = State.data;
+  const needed = stage.needed || 3;
+  bodyEl.innerHTML = `
+    <div class="task-box">
+      <div class="task-label">${stage.taskLabel}</div>
+      <p class="task-prompt">${stage.prompt}</p>
+      <div class="qr-symbols-row">
+        ${Array.from({length:needed}).map((_,i)=>`<div class="qr-symbol-slot ${d.qrSymbols[i]?'got':''}">${d.qrSymbols[i]||'?'}</div>`).join('')}
+      </div>
+      <div class="qr-video-wrap hidden" id="qrVideoWrap"><video id="qrVideo" playsinline></video><div class="qr-frame"></div></div>
+      <div class="mission-actions" style="margin-bottom:14px;">
+        <button class="btn" id="qrStartBtn">📷 СКАНИРОВАТЬ</button>
+        <button class="btn btn-ghost" id="qrStopBtn" style="display:none;">ОСТАНОВИТЬ КАМЕРУ</button>
+      </div>
+      <div class="answer-row"><input class="answer-input" id="qrManualInput" type="text" autocomplete="off" placeholder="Например: QR03"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="mission-actions">
+        <button class="btn btn-primary" id="qrSubmitBtn">ПРОВЕРИТЬ ID</button>
+        <button class="btn" id="hintBtn">ПОДСКАЗКА (${State.data.hintsUsedByStage[stageKey(mission.id,0)]||0}/2)</button>
+      </div>
+      <div class="hints-area" id="hintsArea">${renderHintsBlock(stage.hints, State.data.hintsUsedByStage[stageKey(mission.id,0)]||0)}</div>
+    </div>
+  `;
+  document.getElementById('hintBtn').addEventListener('click', ()=>useHint(mission, 0));
+  document.getElementById('qrSubmitBtn').addEventListener('click', ()=>submitQR(mission, stage));
+  document.getElementById('qrManualInput').addEventListener('keydown', e=>{ if(e.key==='Enter') submitQR(mission, stage); });
+
+  const startBtn = document.getElementById('qrStartBtn');
+  const stopBtn = document.getElementById('qrStopBtn');
+  const wrap = document.getElementById('qrVideoWrap');
+  const video = document.getElementById('qrVideo');
+  startBtn.addEventListener('click', async ()=>{
+    Sound.scan();
+    try{
+      qrStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      video.srcObject = qrStream; await video.play();
+      wrap.classList.remove('hidden'); startBtn.style.display='none'; stopBtn.style.display='inline-block';
+      qrScanLoop(video, mission, stage);
+    }catch(e){
+      const fb = document.getElementById('feedback');
+      fb.textContent = 'КАМЕРА НЕДОСТУПНА. Введи ID с QR-кода вручную в поле выше.';
+      fb.className = 'feedback show err';
+    }
+  });
+  stopBtn.addEventListener('click', ()=>stopQR());
+}
+let qrStream=null, qrRAF=null;
+function qrScanLoop(video, mission, stage){
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  function tick(){
+    if(!qrStream) return;
+    if(video.readyState === video.HAVE_ENOUGH_DATA && window.jsQR){
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      const imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+      const code = window.jsQR(imgData.data, imgData.width, imgData.height);
+      if(code && code.data){
+        Sound.qr();
+        stopQR();
+        submitQR(mission, stage, code.data);
+        return;
+      }
+    }
+    qrRAF = requestAnimationFrame(tick);
+  }
+  qrRAF = requestAnimationFrame(tick);
+}
+function stopQR(){
+  if(qrStream){ qrStream.getTracks().forEach(t=>t.stop()); qrStream=null; }
+  if(qrRAF) cancelAnimationFrame(qrRAF);
+  const wrap = document.getElementById('qrVideoWrap');
+  const startBtn = document.getElementById('qrStartBtn');
+  const stopBtn = document.getElementById('qrStopBtn');
+  if(wrap) wrap.classList.add('hidden');
+  if(startBtn) startBtn.style.display='inline-block';
+  if(stopBtn) stopBtn.style.display='none';
+}
+async function submitQR(mission, stage, scannedCode){
+  const manualInput = document.getElementById('qrManualInput');
+  const code = (scannedCode || (manualInput ? manualInput.value : '')).trim().toUpperCase();
+  if(!code) return;
+  const fb = document.getElementById('feedback');
+  const d = State.data;
+
+  // Guard against rescanning the same QR for repeated XP — checked locally
+  // since the stateless check function can't remember prior scans itself.
+  if(d.qrScanned[code]){
+    fb.textContent = 'Этот маяк уже был отсканирован.';
+    fb.className = 'feedback show';
+    if(manualInput) manualInput.value='';
+    return;
+  }
+
+  const result = await checkQR(mission.id, code);
+  if(result.outcome === 'correct'){
+    Sound.correct();
+    d.qrScanned[code] = true;
+    d.xp = Math.max(0, d.xp + (result.xpDelta||0));
+    d.missionXP[mission.id] = (d.missionXP[mission.id]||0) + (result.xpDelta||0);
+    if(result.symbol && !d.qrSymbols.includes(result.symbol)) d.qrSymbols.push(result.symbol);
+    showXpFloat(result.xpDelta||0);
+    fb.textContent = 'КООРДИНАТЫ ПОДТВЕРЖДЕНЫ.';
+    fb.className = 'feedback show ok';
+    State.save();
+    const needed = result.needed || stage.needed || 3;
+    if(d.qrSymbols.length >= needed){
+      completeMission(mission, result.resultKey, 0);
+      return;
+    }
+    setTimeout(()=>renderMission(document.getElementById('mainContainer')), 700);
+  }else if(result.outcome === 'trap'){
+    Sound.wrong();
+    d.qrScanned[code] = true;
+    d.xp = Math.max(0, d.xp + (result.xpDelta||-50));
+    State.save();
+    fb.textContent = 'ИМПЕРСКАЯ ЛОВУШКА. −50 XP. Но миссия продолжается — ищи дальше.';
+    fb.className = 'feedback show err';
+    renderTopHud();
+  }else{
+    fb.textContent = result.message || 'ЭТО НЕ ТА КООРДИНАТА.';
+    fb.className = 'feedback show err';
+  }
+  if(manualInput) manualInput.value='';
+}
+
+/* ---------- Galactic Map ---------- */
+function renderMap(container){
+  const d = State.data;
+  const planets = getPlanets();
+  container.innerHTML = `
+    <div class="screen" style="padding-top:24px;">
+      <div class="wrap">
+        <div class="panel map-panel">
+          <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+          <div class="mission-eyebrow">GALACTIC MAP</div>
+          <h2 class="mission-title" style="margin-bottom:14px;">МАРШРУТ ПО ГОРОДСКИМ ТОЧКАМ</h2>
+          <div class="planet-row">
+            ${planets.map(p=>{
+              const unlocked = d.completed.includes(p.unlockAfter) || d.completed.length >= p.unlockAfter;
+              return `<div class="planet ${unlocked?'active':'locked'}"><div class="planet-dot"></div><div class="planet-name">${p.name}</div><div class="planet-status">${unlocked?'ТОЧКА ОТКРЫТА':'ЗАБЛОКИРОВАНО'}</div></div>`;
+            }).join('')}
+          </div>
+        </div>
+        <div class="panel" style="margin-top:16px;">
+          <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+          <div class="mission-eyebrow">ФРАГМЕНТЫ КАРТЫ</div>
+          <div class="fragments-grid">
+            ${[1,2,3,4].map(n=>`<div class="fragment-cell ${d.fragments.includes(n)?'got':''}">${d.fragments.includes(n)?`FRAGMENT ${String(n).padStart(2,'0')}<br>✓ СОБРАН`:`FRAGMENT ${String(n).padStart(2,'0')}<br>—`}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- Jedi Archive (completed missions + VAULT) ---------- */
+function renderVaultHtml(){
+  const d = State.data;
+  const missions = getMissions();
+  return `
+    <div class="vault-grid">
+      ${missions.map(m=>{
+        const key = d.missionKeys[m.id];
+        return `<div class="vault-item ${key?'':'locked'}">
+          <div class="vk-label">MISSION ${String(m.id).padStart(2,'0')} · ${m.resultKeyLabel||'КЛЮЧ'}</div>
+          <div class="vk-value">${key || '🔒 не получен'}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+function renderArchive(container){
+  const d = State.data;
+  const missions = getMissions();
+  container.innerHTML = `
+    <div class="screen" style="padding-top:24px;">
+      <div class="wrap">
+        <div class="panel">
+          <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+          <div class="mission-eyebrow">JEDI ARCHIVE</div>
+          <h2 class="mission-title" style="margin-bottom:14px;">ПРОЙДЕННЫЕ МИССИИ</h2>
+          <div class="archive-list">
+            ${missions.map(m=>{
+              const done = d.completed.includes(m.id);
+              const ts = d.archiveTimestamps[m.id];
+              const dateStr = ts ? new Date(ts).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+              const hintsForMission = m.stages.reduce((sum,_,i)=>sum+(d.hintsUsedByStage[stageKey(m.id,i)]||0),0);
+              return `<div class="archive-item ${done?'':'locked'}">
+                <div class="ai-title">${done?'✓':'🔒'} MISSION ${String(m.id).padStart(2,'0')} — ${m.title}</div>
+                ${done ? `<div class="ai-meta">${dateStr}<br>XP ${d.missionXP[m.id]||0} · подсказок ${hintsForMission}</div>` : ''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+        <div class="panel" style="margin-top:16px;">
+          <div class="mission-eyebrow">VAULT — ХРАНИЛИЩЕ КЛЮЧЕЙ</div>
+          ${renderVaultHtml()}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- Secret mission ---------- */
+function renderSecretMission(){
+  const d = State.data;
+  const mission = getSecretMission();
+  const stage = mission.stages[0];
+  const media = getMediaFor(mission.id);
+  app.innerHTML = `
+    <div class="screen" style="padding-top:24px;">
+      <div class="wrap">
+        <div class="panel">
+          <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+          <div class="mission-eyebrow">MISSION 11 · SECRET PROTOCOL</div>
+          <h2 class="mission-title">${mission.title}</h2>
+          <div class="mission-sub">${mission.subtitle}</div>
+          ${charMsgHtml(mission.character, mission.charText)}
+          <p class="story-text">${mission.story}</p>
+          ${media.image ? `<div class="visual-card" style="padding:8px;"><img src="${media.image}" onclick="openLightbox('${media.image}')"></div>` : `<div class="visual-card">${stage.visual}<div class="visual-caption">${stage.caption}</div></div>`}
+          <div id="stageBody"></div>
+          <button class="btn btn-ghost" id="backFromSecret" style="margin-top:14px;">← ВЕРНУТЬСЯ К РЕЗУЛЬТАТАМ</button>
+        </div>
+      </div>
+    </div>
+  `;
+  renderStageBody(mission, stage, State.data.hintsUsedByStage[stageKey(11,0)]||0);
+  document.getElementById('backFromSecret').addEventListener('click', ()=>{
+    State.data.currentView='mission'; State.save(); render();
+  });
+}
+
+/* ---------- Lightbox ---------- */
+function openLightbox(src){
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('show');
+}
+document.getElementById('lightboxClose').addEventListener('click', ()=>{
+  document.getElementById('lightbox').classList.remove('show');
+});
+
+/* ---------- Final screen ---------- */
+function renderFinal(){
+  const d = State.data;
+  if(!d.finalRevealed){
+    app.innerHTML = `
+      <div class="screen" style="background:#000;">
+        <div class="wrap" style="text-align:center;">
+          <div class="boot-line" style="animation-delay:.1s; font-size:1.1rem; color:#fff;">МИССИЯ ЗАВЕРШЕНА</div>
+          <div class="boot-line" style="animation-delay:1s; font-size:1.1rem; color:var(--green);">КРИСТАЛЛ ОБНАРУЖЕН</div>
+          <div class="boot-line" style="animation-delay:2s; font-size:1.1rem; color:var(--cyan);">ДОСТУП К ФИНАЛЬНОЙ КООРДИНАТЕ ПОЛУЧЕН</div>
+          <div style="margin-top:40px;">
+            <button class="btn btn-primary" id="revealBtn" style="opacity:0; animation:fadeUp .5s ease forwards; animation-delay:2.8s;">ОТКРЫТЬ ФИНАЛЬНУЮ ПОДСКАЗКУ</button>
+          </div>
+        </div>
+      </div>
+    `;
+    setTimeout(()=>{
+      const btn = document.getElementById('revealBtn');
+      if(btn) btn.addEventListener('click', ()=>{ Sound.victory(); d.finalRevealed = true; State.save(); render(); });
+    }, 2900);
+    return;
+  }
+
+  const totalHints = d.totalHintsUsed;
+  app.innerHTML = `
+    <div class="screen">
+      <div class="wrap" style="text-align:center;">
+        <div class="final-crystal"><div class="shard"></div></div>
+        <h1 style="font-size:1.6rem; color:#fff;">МИССИЯ ВЫПОЛНЕНА</h1>
+        <h2 style="color:var(--green); font-size:1.2rem;">МАСТЕР-ДЖЕДАЙ ${PLAYER_NAME.toUpperCase()}</h2>
+
+        <div class="panel" style="margin-top:22px; text-align:left;">
+          <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+          <div class="stat-row"><span>Миссий</span><span>${d.completed.length}/${getMissions().length}</span></div>
+          <div class="stat-row"><span>XP</span><span>${d.xp}</span></div>
+          <div class="stat-row"><span>Подсказок</span><span>${totalHints}/20</span></div>
+          <div class="stat-row"><span>QR</span><span>${d.qrSymbols.length}</span></div>
+          <div class="stat-row"><span>Кристалл</span><span>НАЙДЕН</span></div>
+        </div>
+
+        <div class="panel" style="margin-top:16px;">
+          <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+          <div class="hud-label" style="margin-bottom:8px;">ФИНАЛЬНАЯ КООРДИНАТА</div>
+          <p class="story-text" style="margin:0;">${State.config.finalLocationText}</p>
+        </div>
+
+        ${(d.secretUnlocked && !d.secretCompleted) ? `
+          <div class="secret-banner">
+            🔓 SECRET PROTOCOL РАЗБЛОКИРОВАН — ты использовал не больше двух подсказок за всю миссию.
+            <div style="margin-top:10px;"><button class="btn" id="openSecretBtn">ОТКРЫТЬ MISSION 11</button></div>
+          </div>
+        ` : (d.secretCompleted ? `<div class="secret-banner">✅ SECRET PROTOCOL пройден. Ты — истинный мастер-джедай.</div>` : '')}
+
+        <h2 style="margin-top:30px; font-size:1.3rem; color:var(--cyan); text-shadow:0 0 20px rgba(95,216,255,.5);">ДА ПРЕБУДЕТ С ТОБОЙ СИЛА!</h2>
+
+        <button class="btn btn-ghost" id="resetBtn" style="margin-top:24px;">НАЧАТЬ ЗАНОВО</button>
+      </div>
+    </div>
+  `;
+  const secretBtn = document.getElementById('openSecretBtn');
+  if(secretBtn) secretBtn.addEventListener('click', ()=>{
+    Sound.click();
+    d.finished = false; // temporarily leave the final screen to play the bonus mission
+    d.currentView = 'secret';
+    State.save();
+    render();
+  });
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    if(confirm('Сбросить весь прогресс?')){ State.reset(); render(); }
+  });
+}
+
+/* ---------- Admin panel ---------- */
+let adminFullConfig = null;
+
+function renderAdmin(){
+  const authed = sessionStorage.getItem('swq_admin_ok')==='1';
+  const savedPin = sessionStorage.getItem('swq_admin_pin') || '';
+  if(!authed){
+    app.innerHTML = `
+      <div class="screen">
+        <div class="wrap">
+          <div class="panel">
+            <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+            <div class="mission-eyebrow">ПАНЕЛЬ РОДИТЕЛЯ</div>
+            <h2 class="mission-title">ВВЕДИТЕ PIN-КОД</h2>
+            <div class="answer-row"><input class="answer-input" id="pinInput" type="password" inputmode="numeric" placeholder="PIN"></div>
+            <div class="feedback" id="pinFeedback"></div>
+            <button class="btn btn-primary btn-block" id="pinBtn">ВОЙТИ</button>
+            <div style="margin-top:14px;"><a href="#" id="backLink" style="color:var(--ink-dim); font-size:.8rem;">← Вернуться к игре</a></div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.getElementById('pinBtn').addEventListener('click', async ()=>{
+      const val = document.getElementById('pinInput').value;
+      const fb = document.getElementById('pinFeedback');
+      fb.textContent = 'Проверка...'; fb.className='feedback show';
+      const full = await fetchRemoteConfig(val);
+      if(val === (full.adminPin || State.config.adminPin)){
+        sessionStorage.setItem('swq_admin_ok','1');
+        sessionStorage.setItem('swq_admin_pin', val);
+        adminFullConfig = full;
+        renderAdmin();
+      } else {
+        fb.textContent = 'НЕВЕРНЫЙ PIN-КОД.'; fb.className = 'feedback show err';
+      }
+    });
+    document.getElementById('backLink').addEventListener('click', (e)=>{ e.preventDefault(); location.hash=''; render(); });
+    return;
+  }
+
+  renderAdminPanel(savedPin);
+}
+
+async function renderAdminPanel(savedPin){
+  if(!adminFullConfig){
+    adminFullConfig = await fetchRemoteConfig(savedPin);
+  }
+  const cfg = adminFullConfig || State.config;
+  const missions = getMissions();
+  const d = State.data;
+
+  app.innerHTML = `
+    <div class="screen" style="align-items:stretch;">
+      <div class="wrap" style="max-width:760px;">
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="mission-eyebrow">ПАНЕЛЬ РОДИТЕЛЯ</div>
+          <h2 class="mission-title">КОНСТРУКТОР КВЕСТА</h2>
+          <div class="visual-caption" style="margin:8px 0 0;">${remoteAvailable ? '🟢 Подключено к серверу (Netlify Blobs) — изменения видны на всех устройствах. Правильные ответы никогда не отправляются в браузер игрока.' : '🟠 Сервер недоступен — редактирование ответов и медиа требует подключения.'}</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+            <a href="#" id="backLink2" class="btn btn-ghost">← К ИГРЕ</a>
+            <button class="btn" id="syncBtn">🔄 ОБНОВИТЬ С СЕРВЕРА</button>
+            <button class="btn btn-danger" id="resetProgressBtn">СБРОСИТЬ ПРОГРЕСС (ЭТОГО УСТРОЙСТВА)</button>
+            <button class="btn" id="logoutBtn">ВЫЙТИ</button>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="hud-label" style="margin-bottom:10px;">DASHBOARD — ПРОГРЕСС (НА ЭТОМ УСТРОЙСТВЕ)</div>
+          <div class="stat-row"><span>Текущая миссия</span><span>${d.currentMission}</span></div>
+          <div class="stat-row"><span>Пройдено миссий</span><span>${d.completed.join(', ')||'—'}</span></div>
+          <div class="stat-row"><span>XP</span><span>${d.xp}</span></div>
+          <div class="stat-row"><span>Подсказок всего</span><span>${d.totalHintsUsed}</span></div>
+          <div class="stat-row"><span>Фрагментов карты</span><span>${d.fragments.length}/4</span></div>
+        </div>
+
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="admin-field"><label>ФИНАЛЬНАЯ ПОДСКАЗКА (текст, который увидит ребёнок)</label><textarea id="finalLocInput">${cfg.finalLocationText||''}</textarea></div>
+          <div class="admin-field"><label>PIN ПАНЕЛИ РОДИТЕЛЯ</label><input id="pinChangeInput" value="${cfg.adminPin||'1234'}"></div>
+          <div class="feedback" id="globalFeedback"></div>
+          <button class="btn btn-primary" id="saveGlobalBtn">СОХРАНИТЬ</button>
+        </div>
+
+        <div id="adminMissions"></div>
+      </div>
+    </div>
+  `;
+
+  const missionsEl = document.getElementById('adminMissions');
+  missionsEl.innerHTML = missions.map(m=>{
+    const media = (cfg.missionMedia||{})[m.id] || {};
+    const ov = (cfg.missionOverrides||{})[m.id] || {};
+    const isQR = m.stages[0].type==='QR_SCAN';
+    const isOrdering = m.stages[0].type==='ORDERING';
+    let stagesHtml = '';
+    if(isQR){
+      const qrCfg = ov.qr || {correct:['QR02','QR04','QR06'], trap:['QR01','QR03','QR05'], symbols:['X','Y','Z']};
+      stagesHtml = `
+        <div class="admin-field"><label>ID ПРАВИЛЬНЫХ QR (через запятую)</label><input class="f-qr-correct" value="${(qrCfg.correct||[]).join(', ')}"></div>
+        <div class="admin-field"><label>ID QR-ЛОВУШЕК (через запятую)</label><input class="f-qr-trap" value="${(qrCfg.trap||[]).join(', ')}"></div>
+        <div class="admin-field"><label>СИМВОЛЫ ЗА ПРАВИЛЬНЫЕ QR (в том же порядке, через запятую)</label><input class="f-qr-symbols" value="${(qrCfg.symbols||[]).join(', ')}"></div>
+        <div class="admin-field"><label>КЛЮЧ МИССИИ (что увидит игрок в VAULT)</label><input class="f-resultkey" value="${ov.resultKey||''}" placeholder="XYZ"></div>
+      `;
+    } else if(isOrdering){
+      const ordering = ov.ordering || {options:m.stages[0].options, clues:m.stages[0].clues};
+      stagesHtml = `
+        <div class="admin-field"><label>ТОЧКИ МАРШРУТА (через запятую, как показываются игроку)</label><input class="f-order-options" value="${(ordering.options||[]).join(', ')}"></div>
+        <div class="admin-field"><label>ПРАВИЛЬНЫЙ ПОРЯДОК (через запятую, точно теми же словами)</label><input class="f-order-correct" value="${(ov.stageAnswers && ov.stageAnswers[0]) ? ov.stageAnswers[0].join(', ') : (ordering.options||[]).join(', ')}"></div>
+        <div class="admin-field"><label>ПОДСКАЗКИ ШТУРМАНА (по одной на строку)</label><textarea class="f-order-clues">${(ordering.clues||[]).join('\n')}</textarea></div>
+        <div class="admin-field"><label>КЛЮЧ МИССИИ</label><input class="f-resultkey" value="${ov.resultKey||''}" placeholder="HTNC"></div>
+      `;
+    } else {
+      stagesHtml = m.stages.map((s,i)=>{
+        const so = (ov.stages && ov.stages[i]) || {};
+        const answers = (ov.stageAnswers && ov.stageAnswers[i]) || [];
+        return `
+        <div style="border-top:1px solid #1c2f56; padding-top:12px; margin-top:12px;">
+          <div class="hud-label" style="margin-bottom:8px;">ЭТАП ${i+1} — ${s.type}</div>
+          <div class="admin-field"><label>ТЕКСТ ЗАДАНИЯ</label><textarea class="f-stage-prompt" data-stage="${i}">${so.prompt!==undefined?so.prompt:s.prompt}</textarea></div>
+          <div class="admin-field"><label>ПОДСКАЗКА 1</label><input class="f-stage-hint0" data-stage="${i}" value="${(so.hints&&so.hints[0])||s.hints[0]}"></div>
+          <div class="admin-field"><label>ПОДСКАЗКА 2</label><input class="f-stage-hint1" data-stage="${i}" value="${(so.hints&&so.hints[1])||s.hints[1]}"></div>
+          <div class="admin-field"><label>ПРАВИЛЬНЫЕ ОТВЕТЫ (через запятую)</label><input class="f-stage-answers" data-stage="${i}" value="${answers.join(', ')}" placeholder="(оставь пустым — использовать ответ по умолчанию)"></div>
+        </div>
+        `;
+      }).join('');
+      stagesHtml += `<div class="admin-field" style="margin-top:12px;"><label>КЛЮЧ МИССИИ (что увидит игрок в VAULT после прохождения)</label><input class="f-resultkey" value="${ov.resultKey||''}" placeholder="(оставь пустым — использовать ключ по умолчанию)"></div>`;
+    }
+
+    return `
+    <div class="admin-mission-block" data-mid="${m.id}" data-kind="${isQR?'qr':(isOrdering?'ordering':'normal')}">
+      <h3>MISSION ${String(m.id).padStart(2,'0')} — ${m.title}</h3>
+      <div class="admin-field"><label>СЮЖЕТНЫЙ ТЕКСТ МИССИИ (общее вступление, показывается над заданием)</label><textarea class="f-story">${m.story}</textarea></div>
+      <div class="admin-field"><label>РЕПЛИКА ПЕРСОНАЖА (голографическое сообщение)</label><textarea class="f-chartext">${m.charText||''}</textarea></div>
+      ${stagesHtml}
+      <div class="admin-field" style="margin-top:12px;"><label>ЗАГРУЗИТЬ ИЗОБРАЖЕНИЕ</label><input type="file" accept="image/*" class="f-image-file">${media.image?'<div class="visual-caption">Изображение загружено ✓</div>':''}</div>
+      <div class="admin-field"><label>ССЫЛКА НА ВИДЕО (mp4 или YouTube/Vimeo) — необязательно</label><input class="f-video" value="${media.video && !media.video.startsWith('/.netlify')?media.video:''}"></div>
+      <div class="admin-field"><label>ИЛИ ЗАГРУЗИТЬ ЛОКАЛЬНЫЙ ВИДЕОФАЙЛ (до ~20 МБ)</label><input type="file" accept="video/*" class="f-video-file">${media.video && media.video.startsWith('/.netlify')?'<div class="visual-caption">Видео загружено на сервер ✓</div>':''}</div>
+      <div class="feedback mission-feedback"></div>
+      <button class="btn btn-ghost save-mission-btn">СОХРАНИТЬ MISSION ${String(m.id).padStart(2,'0')}</button>
+    </div>
+    `;
+  }).join('');
+
+  document.getElementById('backLink2').addEventListener('click', (e)=>{e.preventDefault(); location.hash=''; render();});
+  document.getElementById('logoutBtn').addEventListener('click', ()=>{
+    sessionStorage.removeItem('swq_admin_ok'); sessionStorage.removeItem('swq_admin_pin'); adminFullConfig=null; renderAdmin();
+  });
+  document.getElementById('syncBtn').addEventListener('click', async ()=>{ adminFullConfig = await fetchRemoteConfig(savedPin); renderAdminPanel(savedPin); });
+  document.getElementById('resetProgressBtn').addEventListener('click', ()=>{
+    if(confirm('Точно сбросить прогресс ребёнка на этом устройстве?')){ State.reset(); alert('Прогресс сброшен.'); renderAdminPanel(savedPin); }
+  });
+  document.getElementById('saveGlobalBtn').addEventListener('click', async ()=>{
+    const btn = document.getElementById('saveGlobalBtn'); const fb = document.getElementById('globalFeedback');
+    const newPin = document.getElementById('pinChangeInput').value || DEFAULT_CONFIG.adminPin;
+    const patch = { finalLocationText: document.getElementById('finalLocInput').value, adminPin: newPin };
+    btn.setAttribute('disabled','true');
+    const result = await saveRemoteConfig(patch, savedPin);
+    btn.removeAttribute('disabled');
+    if(!result.ok && result.reason==='pin'){
+      fb.textContent='НЕВЕРНЫЙ PIN — войдите заново.'; fb.className='feedback show err';
+      sessionStorage.removeItem('swq_admin_ok'); sessionStorage.removeItem('swq_admin_pin'); adminFullConfig=null; return;
+    }
+    if(!result.ok){ fb.textContent='Сервер недоступен — изменения не сохранены. Попробуйте ещё раз.'; fb.className='feedback show err'; return; }
+    sessionStorage.setItem('swq_admin_pin', newPin);
+    fb.textContent='Сохранено на сервере — видно на всех устройствах.'; fb.className='feedback show ok';
+    adminFullConfig = await fetchRemoteConfig(newPin);
+  });
+
+  missionsEl.querySelectorAll('.admin-mission-block').forEach(block=>{
+    const mid = parseInt(block.getAttribute('data-mid'),10);
+    const kind = block.getAttribute('data-kind');
+    const fb = block.querySelector('.mission-feedback');
+    block.querySelector('.save-mission-btn').addEventListener('click', async ()=>{
+      const saveBtn = block.querySelector('.save-mission-btn');
+      saveBtn.setAttribute('disabled','true');
+      try{
+        const missionOverride = {};
+        const storyInput = block.querySelector('.f-story');
+        if(storyInput) missionOverride.story = storyInput.value;
+        const charTextInput = block.querySelector('.f-chartext');
+        if(charTextInput) missionOverride.charText = charTextInput.value;
+        const resultKeyInput = block.querySelector('.f-resultkey');
+        if(resultKeyInput && resultKeyInput.value.trim()) missionOverride.resultKey = resultKeyInput.value.trim();
+
+        if(kind==='qr'){
+          missionOverride.qr = {
+            correct: block.querySelector('.f-qr-correct').value.split(',').map(s=>s.trim()).filter(Boolean),
+            trap: block.querySelector('.f-qr-trap').value.split(',').map(s=>s.trim()).filter(Boolean),
+            symbols: block.querySelector('.f-qr-symbols').value.split(',').map(s=>s.trim()).filter(Boolean)
+          };
+        } else if(kind==='ordering'){
+          const options = block.querySelector('.f-order-options').value.split(',').map(s=>s.trim()).filter(Boolean);
+          const correct = block.querySelector('.f-order-correct').value.split(',').map(s=>s.trim()).filter(Boolean);
+          const clues = block.querySelector('.f-order-clues').value.split('\n').map(s=>s.trim()).filter(Boolean);
+          missionOverride.ordering = {options, clues};
+          missionOverride.stageAnswers = [ [correct.join(',')] ];
+        } else {
+          const stages = [];
+          const stageAnswers = [];
+          block.querySelectorAll('.f-stage-prompt').forEach(el=>{
+            const i = parseInt(el.getAttribute('data-stage'),10);
+            stages[i] = Object.assign({}, stages[i], {prompt: el.value});
+          });
+          block.querySelectorAll('.f-stage-hint0').forEach(el=>{
+            const i = parseInt(el.getAttribute('data-stage'),10);
+            stages[i] = Object.assign({}, stages[i], {hints:[el.value, (stages[i]&&stages[i].hints&&stages[i].hints[1])||'']});
+          });
+          block.querySelectorAll('.f-stage-hint1').forEach(el=>{
+            const i = parseInt(el.getAttribute('data-stage'),10);
+            stages[i] = Object.assign({}, stages[i], {hints:[(stages[i]&&stages[i].hints&&stages[i].hints[0])||'', el.value]});
+          });
+          block.querySelectorAll('.f-stage-answers').forEach(el=>{
+            const i = parseInt(el.getAttribute('data-stage'),10);
+            const vals = el.value.split(',').map(s=>s.trim()).filter(Boolean);
+            if(vals.length) stageAnswers[i] = vals;
+          });
+          missionOverride.stages = stages;
+          if(stageAnswers.length) missionOverride.stageAnswers = stageAnswers;
+        }
+
+        const mediaPatch = {};
+        const videoUrlInput = block.querySelector('.f-video');
+        const videoFileInput = block.querySelector('.f-video-file');
+        const imageFileInput = block.querySelector('.f-image-file');
+        if(videoFileInput && videoFileInput.files && videoFileInput.files[0]){
+          fb.textContent='Загружаю видео на сервер...'; fb.className='feedback show';
+          mediaPatch.video = await uploadAsset('video:'+mid, videoFileInput.files[0], savedPin);
+        } else if(videoUrlInput && videoUrlInput.value.trim()){
+          mediaPatch.video = videoUrlInput.value.trim();
+        }
+        if(imageFileInput && imageFileInput.files && imageFileInput.files[0]){
+          fb.textContent='Загружаю изображение на сервер...'; fb.className='feedback show';
+          mediaPatch.image = await uploadAsset('image:'+mid, imageFileInput.files[0], savedPin);
+        }
+
+        const patch = { missionOverrides: {[mid]: missionOverride} };
+        if(Object.keys(mediaPatch).length) patch.missionMedia = {[mid]: mediaPatch};
+
+        const result = await saveRemoteConfig(patch, savedPin);
+        if(!result.ok && result.reason==='pin'){
+          fb.textContent='НЕВЕРНЫЙ PIN — войдите заново.'; fb.className='feedback show err';
+          sessionStorage.removeItem('swq_admin_ok'); sessionStorage.removeItem('swq_admin_pin'); adminFullConfig=null; return;
+        }
+        if(!result.ok){ fb.textContent='Сервер недоступен — миссия не сохранена. Попробуйте ещё раз.'; fb.className='feedback show err'; saveBtn.removeAttribute('disabled'); return; }
+        fb.textContent='Миссия '+mid+' сохранена на сервере — видно на всех устройствах.'; fb.className='feedback show ok';
+        adminFullConfig = await fetchRemoteConfig(savedPin);
+        renderAdminPanel(savedPin);
+      }catch(e){
+        fb.textContent = (e && e.message) ? e.message : 'Не удалось сохранить миссию.';
+        fb.className = 'feedback show err';
+        saveBtn.removeAttribute('disabled');
+      }
+    });
+  });
+}
+
+/* ---------- init ---------- */
+initApp();
+
+async function initApp(){
+  app.innerHTML = `
+    <div class="screen">
+      <div class="wrap" style="text-align:center;">
+        <div class="holocron"><div class="cube"></div></div>
+        <div class="intro-glyphs mono">синхронизация с сервером миссии...</div>
+      </div>
+    </div>
+  `;
+  await Promise.race([ fetchRemoteConfig(), new Promise(resolve=>setTimeout(resolve, 8000)) ]);
+  render();
+}
+</script>
+</body>
+</html>
