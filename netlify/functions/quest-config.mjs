@@ -1,7 +1,7 @@
 import { getStore } from '@netlify/blobs';
 
 const DEFAULT_CONFIG = {
-  finalLocationText: 'ПОСЛЕДНИЙ КРИСТАЛЛ ЖДЁТ ТЕБЯ ТАМ, ГДЕ НАЧАЛАСЬ МИССИЯ.',
+  finalLocationText: 'ПОСЛЕДНИЙ КРИСТАЛЛ ЖДЁТ ТЕБЯ на улице Имперского Стратега, комплекс «Турболазер-7.',
   adminPin: '1234',
   missionOverrides: {},
   missionMedia: {},
